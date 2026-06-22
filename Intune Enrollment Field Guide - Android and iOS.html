@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Intune Enrollment Field Guide — Android &amp; iOS/iPadOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F3EC;
+    --paper-raised:#FFFFFF;
+    --ink:#1C2321;
+    --ink-soft:#52584F;
+    --ink-faint:#80847A;
+    --rule:#DCD5C2;
+    --rule-strong:#C7BEA4;
+    --teal:#1F5C52;
+    --teal-deep:#143E38;
+    --teal-soft:#E3EFEA;
+    --amber:#92531C;
+    --amber-soft:#F3E5D2;
+    --rust:#8C3B33;
+    --rust-soft:#F3DFDA;
+    --slate:#3E5266;
+    --slate-soft:#E4EAF0;
+    --shadow: 0 1px 2px rgba(28,35,33,0.06), 0 6px 16px rgba(28,35,33,0.05);
+    --radius: 10px;
+    --sidebar-w: 290px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{
+    font-family:'Source Serif 4', Georgia, serif;
+    color:var(--teal-deep);
+    line-height:1.2;
+    font-weight:700;
+    margin:0 0 0.5em 0;
+  }
+  code, .mono, .tag, .pill, .kbd{
+    font-family:'IBM Plex Mono', monospace;
+  }
+  a{color:var(--teal);text-decoration-thickness:1px;}
+  a:hover{color:var(--teal-deep);}
+  p{margin:0 0 1em 0;}
+  ul,ol{margin:0 0 1em 0;padding-left:1.3em;}
+  li{margin-bottom:0.4em;}
+
+  /* ===== Layout ===== */
+  .shell{display:flex;min-height:100vh;}
+  .sidebar{
+    width:var(--sidebar-w);
+    flex-shrink:0;
+    background:var(--teal-deep);
+    color:#E9EFEC;
+    position:fixed;
+    top:0;left:0;bottom:0;
+    overflow-y:auto;
+    padding:28px 22px 60px 26px;
+    z-index:50;
+  }
+  .sidebar::-webkit-scrollbar{width:8px;}
+  .sidebar::-webkit-scrollbar-thumb{background:#2A695D;border-radius:8px;}
+  .brand{
+    font-family:'Source Serif 4',serif;
+    font-size:1.18rem;
+    font-weight:700;
+    color:#fff;
+    line-height:1.25;
+    margin-bottom:4px;
+  }
+  .brand small{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.68rem;
+    letter-spacing:0.08em;
+    color:#9FC6BC;
+    text-transform:uppercase;
+    margin-top:6px;
+    font-weight:500;
+  }
+  .toc{margin-top:26px;}
+  .toc-group{margin-bottom:18px;}
+  .toc-group-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.66rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:#7FAFA3;
+    margin-bottom:8px;
+    padding-left:2px;
+  }
+  .toc a{
+    display:block;
+    color:#D7E6E1;
+    text-decoration:none;
+    font-size:0.86rem;
+    padding:5px 8px;
+    border-radius:6px;
+    margin-bottom:1px;
+    transition:background 0.15s;
+  }
+  .toc a:hover{background:#1E5A4F;color:#fff;}
+  .toc a.sub{padding-left:20px;font-size:0.8rem;color:#AFCAC3;}
+
+  .menu-toggle{display:none;}
+
+  main{
+    margin-left:var(--sidebar-w);
+    flex:1;
+    max-width:920px;
+    padding:50px 56px 120px 56px;
+  }
+  .page-hero{
+    border-bottom:3px solid var(--ink);
+    padding-bottom:28px;
+    margin-bottom:38px;
+  }
+  .page-hero .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:10px;
+  }
+  .page-hero h1{font-size:2.5rem;margin-bottom:0.3em;}
+  .page-hero .dek{font-size:1.12rem;color:var(--ink-soft);max-width:640px;}
+
+  section.block{margin-bottom:64px;}
+  section.block > h2{
+    font-size:1.85rem;
+    padding-bottom:10px;
+    border-bottom:2px solid var(--rule-strong);
+    margin-bottom:18px;
+    scroll-margin-top:24px;
+  }
+  section.block > h2 .num{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--amber);
+    font-size:0.95rem;
+    margin-right:10px;
+    font-weight:600;
+  }
+  h3{font-size:1.32rem;margin-top:1.6em;scroll-margin-top:24px;}
+  h3.method-title{margin-top:0;}
+  h4{font-size:1.05rem;color:var(--ink);font-family:'Inter',sans-serif;font-weight:700;}
+
+  .lead{font-size:1.06rem;color:var(--ink-soft);}
+
+  /* ===== Callouts ===== */
+  .callout{
+    border-radius:var(--radius);
+    padding:16px 20px;
+    margin:18px 0;
+    border:1px solid var(--rule);
+    background:var(--paper-raised);
+  }
+  .callout.info{border-left:4px solid var(--teal);}
+  .callout.warn{border-left:4px solid var(--amber);background:var(--amber-soft);}
+  .callout.danger{border-left:4px solid var(--rust);background:var(--rust-soft);}
+  .callout .callout-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    font-weight:600;
+    margin-bottom:6px;
+    display:block;
+  }
+  .callout.info .callout-label{color:var(--teal-deep);}
+  .callout.warn .callout-label{color:var(--amber);}
+  .callout.danger .callout-label{color:var(--rust);}
+  .callout p:last-child{margin-bottom:0;}
+
+  /* ===== Status pills ===== */
+  .pill{
+    display:inline-block;
+    font-size:0.68rem;
+    font-weight:600;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:3px 9px;
+    border-radius:20px;
+    margin-right:6px;
+  }
+  .pill-current{background:var(--teal-soft);color:var(--teal-deep);border:1px solid #B8D7CC;}
+  .pill-legacy{background:var(--amber-soft);color:var(--amber);border:1px solid #E0C19C;}
+  .pill-deprecated{background:var(--rust-soft);color:var(--rust);border:1px solid #DDB3AC;}
+  .pill-byod{background:var(--slate-soft);color:var(--slate);border:1px solid #C3CEDA;}
+  .pill-corp{background:#EFEAE0;color:#5C4A2E;border:1px solid #D8C9A8;}
+
+  /* ===== Method datasheet card ===== */
+  .datasheet{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    margin:26px 0 40px 0;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    scroll-margin-top:24px;
+  }
+  .datasheet-head{
+    padding:18px 24px;
+    background:linear-gradient(135deg,var(--teal-deep),#1B5048);
+    color:#fff;
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+  .datasheet-head h3{color:#fff;margin:0;font-size:1.3rem;}
+  .datasheet-head .id-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.72rem;
+    color:#9FC6BC;
+    letter-spacing:0.06em;
+    margin-bottom:4px;
+    display:block;
+  }
+  .datasheet-badges{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-start;}
+  .datasheet-body{padding:22px 24px 8px 24px;}
+  .datasheet-def{
+    font-size:1rem;
+    color:var(--ink-soft);
+    padding-bottom:16px;
+    margin-bottom:18px;
+    border-bottom:1px dashed var(--rule-strong);
+  }
+  .spec-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px 28px;
+    margin-bottom:6px;
+  }
+  .spec-field{margin-bottom:4px;}
+  .spec-field .spec-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem;
+    letter-spacing:0.07em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:5px;
+    display:block;
+  }
+  .spec-field p, .spec-field ul{font-size:0.93rem;margin-bottom:0;}
+  .spec-field ul{padding-left:1.1em;}
+  .spec-full{grid-column:1 / -1;}
+  .spec-divider{grid-column:1/-1;border-top:1px solid var(--rule);margin:6px 0 4px 0;}
+
+  /* ===== Tables ===== */
+  .table-wrap{overflow-x:auto;margin:20px 0;border-radius:var(--radius);border:1px solid var(--rule);box-shadow:var(--shadow);}
+  table{width:100%;border-collapse:collapse;background:var(--paper-raised);font-size:0.88rem;}
+  table caption{text-align:left;padding:12px 16px;font-weight:600;color:var(--teal-deep);background:var(--teal-soft);font-family:'Inter',sans-serif;}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top;}
+  thead th{background:var(--ink);color:#fff;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;letter-spacing:0.04em;text-transform:uppercase;font-weight:500;}
+  tbody tr:nth-child(even){background:#FBFAF6;}
+  tbody tr:hover{background:var(--teal-soft);}
+  td.hl{font-weight:600;color:var(--teal-deep);}
+
+  /* ===== Diagram frame ===== */
+  .diagram-frame{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:24px;
+    margin:22px 0;
+    box-shadow:var(--shadow);
+  }
+  .diagram-frame .cap{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.74rem;
+    color:var(--ink-faint);
+    margin-top:14px;
+    text-align:center;
+  }
+  .diagram-frame svg{width:100%;height:auto;display:block;}
+
+  /* ===== Glossary ===== */
+  .gloss-item{
+    padding:16px 0;
+    border-bottom:1px solid var(--rule);
+  }
+  .gloss-item dt{
+    font-family:'Source Serif 4',serif;
+    font-weight:700;
+    font-size:1.05rem;
+    color:var(--teal-deep);
+    margin-bottom:6px;
+  }
+  .gloss-item dt .abbr{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.74rem;
+    color:var(--amber);
+    font-weight:500;
+    margin-left:8px;
+  }
+  .gloss-item dd{margin:0;color:var(--ink-soft);font-size:0.95rem;}
+  .gloss-item dd .analogy{
+    display:block;
+    margin-top:6px;
+    padding:8px 12px;
+    background:var(--paper);
+    border-left:3px solid var(--teal);
+    font-size:0.88rem;
+    color:var(--ink);
+    border-radius:4px;
+  }
+
+  /* ===== Scenario cards ===== */
+  .scenario-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin:20px 0;}
+  .scenario-card{
+    background:var(--paper-raised);
+    border:1px solid var(--rule);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    box-shadow:var(--shadow);
+  }
+  .scenario-card .role{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.7rem;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--amber);
+    margin-bottom:6px;
+    display:block;
+  }
+  .scenario-card h4{margin-bottom:8px;}
+  .scenario-card p{font-size:0.9rem;color:var(--ink-soft);margin-bottom:8px;}
+  .scenario-card .method-used{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:0.78rem;
+    background:var(--teal-soft);
+    color:var(--teal-deep);
+    padding:6px 10px;
+    border-radius:6px;
+    display:inline-block;
+  }
+
+  /* ===== Mistake / trap list ===== */
+  .trap{
+    display:flex;
+    gap:14px;
+    padding:14px 0;
+    border-bottom:1px solid var(--rule);
+    align-items:flex-start;
+  }
+  .trap .trap-icon{
+    flex-shrink:0;
+    width:30px;height:30px;
+    border-radius:50%;
+    background:var(--rust-soft);
+    color:var(--rust);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-weight:700;
+    font-size:0.85rem;
+    margin-top:2px;
+  }
+  .trap-body p{margin-bottom:4px;font-size:0.92rem;}
+  .trap-body .fix{color:var(--teal-deep);font-size:0.88rem;}
+  .trap-body .fix b{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;}
+
+  hr.soft{border:none;border-top:1px solid var(--rule);margin:36px 0;}
+
+  footer.guide-footer{
+    margin-top:60px;
+    padding-top:28px;
+    border-top:3px solid var(--ink);
+    color:var(--ink-faint);
+    font-size:0.85rem;
+  }
+
+  @media (max-width: 980px){
+    .sidebar{transform:translateX(-100%);transition:transform 0.2s ease;box-shadow:4px 0 24px rgba(0,0,0,0.25);}
+    .sidebar.open{transform:translateX(0);}
+    main{margin-left:0;padding:30px 22px 100px 22px;}
+    .menu-toggle{
+      display:flex;position:fixed;top:16px;left:16px;z-index:60;
+      width:44px;height:44px;border-radius:50%;
+      background:var(--teal-deep);color:#fff;align-items:center;justify-content:center;
+      box-shadow:var(--shadow);border:none;font-size:1.2rem;cursor:pointer;
+    }
+    .spec-grid{grid-template-columns:1fr;}
+    .page-hero h1{font-size:1.9rem;}
+  }
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰</button>
+<div class="shell">
+<nav class="sidebar">
+  <div class="brand">The Intune Enrollment<br>Field Guide<small>Android &amp; iOS/iPadOS · 2026 Edition</small></div>
+  <div class="toc">
+    <div class="toc-group">
+      <div class="toc-group-label">Orientation</div>
+      <a href="#how-to-use">How to use this guide</a>
+      <a href="#concepts">Core concepts, plain English</a>
+      <a href="#ecosystem">The ecosystem map</a>
+      <a href="#mode-vs-method">Mode vs. method</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 1 — Android</div>
+      <a href="#android-intro">Android enrollment overview</a>
+      <a class="sub" href="#a-work-profile-byod">Work profile — BYOD</a>
+      <a class="sub" href="#a-work-profile-corp">Work profile — corporate</a>
+      <a class="sub" href="#a-fully-managed">Fully managed</a>
+      <a class="sub" href="#a-dedicated">Dedicated (kiosk)</a>
+      <a href="#android-decision-tree">Android decision tree</a>
+      <a class="sub" href="#b-zero-touch">Zero-touch enrollment</a>
+      <a class="sub" href="#b-kme">Knox Mobile Enrollment</a>
+      <a class="sub" href="#b-qr">QR code enrollment</a>
+      <a class="sub" href="#b-token">Token / afw#setup</a>
+      <a class="sub" href="#b-nfc">NFC tag enrollment</a>
+      <a class="sub" href="#b-companyportal">Company Portal token (BYOD)</a>
+      <a href="#android-legacy">Legacy &amp; deprecated (Android)</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 2 — iOS / iPadOS</div>
+      <a href="#ios-intro">iOS enrollment overview</a>
+      <a class="sub" href="#i-ade-modern">ADE — Setup Assistant (modern auth)</a>
+      <a class="sub" href="#i-ade-configurator">ADE via Apple Configurator</a>
+      <a class="sub" href="#i-device-cp">Device enrollment with Company Portal</a>
+      <a class="sub" href="#i-account-driven">Account-driven User Enrollment</a>
+      <a class="sub" href="#i-shared-ipad">Shared iPad</a>
+      <a class="sub" href="#i-asm">Apple School Manager</a>
+      <a href="#ios-decision-tree">iOS decision tree</a>
+      <a href="#ios-legacy">Legacy &amp; deprecated (iOS)</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 3 — Compare</div>
+      <a href="#comparison-tables">Comparison tables</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 4 — Diagrams</div>
+      <a href="#lifecycle-diagram">Device lifecycle</a>
+      <a href="#auth-flow-diagram">Authentication flow</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 5 — Scenario</div>
+      <a href="#contoso">Contoso Healthcare</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 6 — Admin view</div>
+      <a href="#admin-perspective">Administrator perspective</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-group-label">Section 7 — Reference</div>
+      <a href="#mistakes">Common mistakes &amp; traps</a>
+      <a href="#glossary-table">Quick-reference glossary</a>
+      <a href="#sources">Sources &amp; currency</a>
+    </div>
+  </div>
+</nav>
+<main>
+
+<div class="page-hero">
+  <div class="eyebrow">Microsoft Intune · Device Enrollment Reference</div>
+  <h1>The Intune Enrollment Field Guide</h1>
+  <p class="dek">A complete, beginner-friendly walkthrough of every way an Android or iOS/iPadOS device gets into Microsoft Intune — what each method is, why it exists, what it costs you in prerequisites and licensing, and what it feels like for the IT admin and the end user. Built around one consistent worked example — a fictional health system called Contoso Healthcare — so the differences stay concrete instead of abstract.</p>
+</div>
+
+<section class="block" id="how-to-use">
+  <h2><span class="num">00</span>How to use this guide</h2>
+  <p class="lead">This isn't a single article to read top to bottom in one sitting — it's a reference you'll dip back into. Here's the shape of it, and how the pieces fit together.</p>
+
+  <div class="spec-grid" style="margin-top:20px;">
+    <div class="spec-field">
+      <span class="spec-label">Datasheet cards</span>
+      <p>Every enrollment method gets the exact same set of fields, in the exact same order — definition, real-world use case, prerequisites, licensing, workflow, ownership model, user experience, management capability, security implications, limitations, pros/cons, common mistakes, best practice. Once you've read one card, you know how to skim all the others.</p>
+    </div>
+    <div class="spec-field">
+      <span class="spec-label">Status badges</span>
+      <p>
+        <span class="pill pill-current">Current</span> means Microsoft, Google, Samsung, or Apple actively recommend it today (mid-2026).
+        <span class="pill pill-legacy">Legacy</span> means it still works but is being phased out or superseded.
+        <span class="pill pill-deprecated">Deprecated</span> means don't build anything new on it — it may already be unsupported for new enrollments.
+      </p>
+    </div>
+    <div class="spec-field">
+      <span class="spec-label">Ownership badges</span>
+      <p><span class="pill pill-byod">BYOD</span> marks methods built for personally-owned devices. <span class="pill pill-corp">Corporate</span> marks methods built for organization-owned hardware. Several methods only make sense for one or the other — that's one of the biggest sources of confusion for newcomers, and it's the very first thing this guide untangles.</p>
+    </div>
+    <div class="spec-field">
+      <span class="spec-label">A note on currency</span>
+      <p>Mobile device management moves fast. This guide reflects the state of Microsoft Intune, Android Enterprise, Samsung Knox, and Apple's enterprise platform as of <strong>June 2026</strong> — including a significant rename you'll see referenced throughout: <strong>Apple Business Manager became Apple Business</strong> on April 14, 2026. See <a href="#sources">Sources &amp; currency</a> at the end for what changed recently and what to re-check periodically.</p>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="concepts">
+  <h2><span class="num">01</span>Core concepts, in plain English</h2>
+  <p class="lead">Every enrollment method card later in this guide leans on these terms. Read this section once, properly, and the rest of the guide gets dramatically easier.</p>
+
+  <div class="gloss-item">
+    <dt>Mobile Device Management <span class="abbr">MDM</span></dt>
+    <dd>Software that lets your organization remotely configure, secure, and monitor a phone, tablet, or computer — push settings, install apps, enforce a passcode, wipe it if it's lost. Intune is Microsoft's MDM (and MAM) product.
+      <span class="analogy">Think of MDM as a master key plus a settings panel your IT team can reach into from anywhere, without physically touching the device.</span>
+    </dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Mobile Application Management <span class="abbr">MAM</span></dt>
+    <dd>A lighter-weight alternative to full MDM. Instead of managing the whole device, Intune manages just the work apps on it (Outlook, Teams, etc.) — wrapping them in policy so corporate data can be encrypted, backed up, or wiped without ever touching the user's personal photos, texts, or other apps.
+      <span class="analogy">MDM manages the house. MAM manages one locked room inside the house, leaving everything else untouched.</span>
+    </dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Android Enterprise</dt>
+    <dd>Google's modern framework for managing Android devices at work. It replaced the older, weaker "Device Administrator" API. Every current Android enrollment method in this guide — work profile, fully managed, dedicated — is a flavor of Android Enterprise. Intune talks to Android Enterprise through the <strong>Android Management API</strong> after your tenant is bound to a <strong>managed Google Play</strong> account.
+      <span class="analogy">Android Enterprise is the rulebook Google wrote so that any MDM vendor (Intune, but also others) manages Android devices the same secure, supported way.</span>
+    </dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Managed Google Play</dt>
+    <dd>A special enterprise storefront layered on top of the regular Google Play Store. It's how Intune silently pushes, approves, and updates apps on Android Enterprise devices without the user needing a personal Google account or ever touching the consumer Play Store on the work side.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Work Profile</dt>
+    <dd>A walled-off, encrypted container that lives inside an Android device. Work apps, work data, and work notifications live inside it; everything else on the phone stays outside it. Intune can only see and control what's inside the work profile — it has no visibility into personal photos, personal WhatsApp, personal browsing, etc.
+      <span class="analogy">Picture a locked briefcase that travels around inside someone's regular backpack. IT controls the briefcase. The backpack — and everything else in it — stays the user's business.</span>
+    </dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Fully Managed</dt>
+    <dd>The opposite end of the spectrum from a work profile: the entire device is owned and controlled by the organization, with no separate personal space. Intune sees and can configure the whole device, not just a container inside it. This mode is also called <strong>device owner</strong> mode in Android's own terminology.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Corporate-Owned, Personally Enabled <span class="abbr">COPE</span></dt>
+    <dd>A hybrid: the organization owns the device outright (fully managed at the device level), but a work profile is still carved out inside it so the employee can also use it personally. Google's current documentation calls this "work profile on a company-owned device," but COPE is still the term you'll hear constantly in the field, in vendor docs, and on certification exams.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Dedicated Device <span class="abbr">formerly COSU</span></dt>
+    <dd>A fully managed device locked down to one app or a small set of apps, with no personal use at all. Used for kiosks, scanners, shared point-of-care tablets, or digital signage. Google's older name for this was "corporate-owned, single-use" (COSU) — that term is now deprecated in favor of "dedicated device."</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Automated Device Enrollment <span class="abbr">ADE</span></dt>
+    <dd>Apple's zero-touch enrollment system for iPhone, iPad, and Mac. A device bought through an authorized channel is associated with your organization before it ever ships. The very first time it's powered on and connects to Wi-Fi, it automatically finds your MDM (Intune) and applies your settings — no manual profile installation, no IT technician unboxing it by hand.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Apple Business <span class="abbr">formerly Apple Business Manager / ABM</span></dt>
+    <dd>Apple's web portal for buying devices and apps in bulk, and the thing that links those devices to Intune via ADE. On April 14, 2026, Apple retired the names "Apple Business Manager," "Apple Business Essentials," and "Apple Business Connect," folding everything into a single rebranded platform called <strong>Apple Business</strong>. The underlying device-enrollment mechanics (ADE, tokens, Managed Apple Accounts) are unchanged — only the name and some packaging changed. You will still hear "ABM" used constantly out of habit, including in this guide's diagrams, because most documentation and IT teams haven't fully switched over yet.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Apple School Manager <span class="abbr">ASM</span></dt>
+    <dd>Apple Business's sibling platform, purpose-built for K-12 and higher-education institutions. It uses the exact same ADE mechanics as Apple Business but adds education-specific features (Classroom app, Shared iPad student accounts, rostering). Not directly relevant to a healthcare tenant like HNZ, but Intune's ADE setup steps are identical whether the token comes from Apple Business or Apple School Manager.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Supervision</dt>
+    <dd>A heightened management state Apple grants to organization-owned devices, almost always set up via ADE. A supervised device unlocks restrictions and controls that simply don't exist on an unsupervised device — things like silently installing apps without user interaction, blocking AirDrop, or forcing Single App Mode. A device enrolled via Account-Driven User Enrollment (BYOD) is never supervised.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Managed Apple Account <span class="abbr">formerly Managed Apple ID</span></dt>
+    <dd>A company-owned Apple Account, separate from a person's personal Apple ID, used to sign into Shared iPad or to access iCloud-adjacent services on a managed device. When you federate Entra ID with Apple Business, these can be created automatically and matched to a person's Entra username.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Compliance Policy</dt>
+    <dd>A rule Intune checks a device against — minimum OS version, passcode required, device not jailbroken/rooted, encryption on, and so on. A device that fails a compliance check gets flagged "Not compliant" in Intune, which Conditional Access can then act on.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Configuration Profile</dt>
+    <dd>A set of settings Intune pushes to a device or group of devices — Wi-Fi credentials, VPN settings, restrictions like "disable camera," certificate deployment, app configuration. Compliance policies check a state; configuration profiles set a state.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Conditional Access</dt>
+    <dd>An Entra ID feature that gates access to resources (Exchange Online, SharePoint, Teams, etc.) based on conditions — is the device compliant, is it a known/registered device, is the sign-in coming from a trusted location, is MFA satisfied. Intune's compliance status is one of the most common conditions Conditional Access checks before letting someone in.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Device Enrollment Manager <span class="abbr">DEM</span></dt>
+    <dd>A special Entra ID account type that can enroll a much larger number of devices than a normal user account is allowed to (the default per-user enrollment cap is low). IT teams use a DEM account to bulk-provision shared or kiosk devices without hitting that ceiling.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Declarative Device Management <span class="abbr">DDM</span></dt>
+    <dd>Apple's newer device-management protocol, now the default across iOS, iPadOS, and macOS. Instead of Intune constantly polling "are you compliant yet?", the device itself watches for changes and proactively reports its status when something changes. The result is faster compliance reporting and less network chatter. Every current Apple enrollment method in this guide rides on top of DDM by default in 2026.</dd>
+  </div>
+
+  <div class="gloss-item">
+    <dt>Enrollment Single Sign-On <span class="abbr">Enrollment SSO</span></dt>
+    <dd>An Apple feature that lets a user authenticate once during ADE setup and have that authentication carried through to the Company Portal app, Safari, and other apps that need it — instead of typing their password three separate times during setup.</dd>
+  </div>
+</section>
+
+<section class="block" id="ecosystem">
+  <h2><span class="num">02</span>The ecosystem map</h2>
+  <p class="lead">Before any single enrollment method makes sense, it helps to see the whole machine. Intune doesn't enroll devices in isolation — it's the hub between your identity system and two completely separate vendor ecosystems, each with its own portal, its own token, and its own rules.</p>
+
+  <div class="diagram-frame">
+    <svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#3E5266"/>
+        </marker>
+        <marker id="arrowTeal" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,3 L0,6 Z" fill="#1F5C52"/>
+        </marker>
+      </defs>
+
+      <!-- Entra ID -->
+      <rect x="330" y="20" width="240" height="64" rx="10" fill="#3E5266"/>
+      <text x="450" y="46" text-anchor="middle" fill="#fff" font-family="Source Serif 4, serif" font-weight="700" font-size="17">Microsoft Entra ID</text>
+      <text x="450" y="66" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="11">identity · groups · Conditional Access</text>
+
+      <!-- Intune -->
+      <rect x="330" y="140" width="240" height="64" rx="10" fill="#1F5C52"/>
+      <text x="450" y="166" text-anchor="middle" fill="#fff" font-family="Source Serif 4, serif" font-weight="700" font-size="17">Microsoft Intune</text>
+      <text x="450" y="186" text-anchor="middle" fill="#D7E9E2" font-family="IBM Plex Mono, monospace" font-size="11">MDM + MAM engine</text>
+
+      <line x1="450" y1="84" x2="450" y2="138" stroke="#3E5266" stroke-width="2.5" marker-end="url(#arrow)"/>
+      <line x1="430" y1="138" x2="430" y2="84" stroke="#3E5266" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+      <text x="475" y="115" font-family="IBM Plex Mono, monospace" font-size="10" fill="#52584F">device registration ↑ / policy push ↓</text>
+
+      <!-- Apple branch -->
+      <rect x="60" y="280" width="230" height="70" rx="10" fill="#FFFFFF" stroke="#92531C" stroke-width="1.5"/>
+      <text x="175" y="305" text-anchor="middle" font-family="Source Serif 4, serif" font-weight="700" font-size="15" fill="#92531C">Apple Business</text>
+      <text x="175" y="322" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#52584F">(formerly Apple Business Manager)</text>
+      <text x="175" y="338" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A">ADE token (.p7m) + push cert</text>
+
+      <rect x="60" y="380" width="230" height="46" rx="8" fill="#F3E5D2" stroke="#92531C" stroke-width="1"/>
+      <text x="175" y="408" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6B3B12">sibling: Apple School Manager (education)</text>
+
+      <line x1="290" y1="305" x2="328" y2="200" stroke="#92531C" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="320" y1="200" x2="282" y2="305" stroke="#92531C" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+      <rect x="60" y="500" width="230" height="64" rx="10" fill="#3E5266"/>
+      <text x="175" y="526" text-anchor="middle" fill="#fff" font-family="Source Serif 4, serif" font-weight="700" font-size="15">iPhone / iPad</text>
+      <text x="175" y="544" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="10">ADE · Supervised · DDM</text>
+      <line x1="175" y1="426" x2="175" y2="498" stroke="#92531C" stroke-width="2" marker-end="url(#arrow)"/>
+
+      <!-- Android branch -->
+      <rect x="610" y="280" width="230" height="70" rx="10" fill="#FFFFFF" stroke="#1F5C52" stroke-width="1.5"/>
+      <text x="725" y="305" text-anchor="middle" font-family="Source Serif 4, serif" font-weight="700" font-size="15" fill="#1F5C52">Managed Google Play</text>
+      <text x="725" y="322" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#52584F">Android Enterprise binding</text>
+      <text x="725" y="338" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A">Android Management API</text>
+
+      <rect x="605" y="380" width="110" height="46" rx="8" fill="#E3EFEA" stroke="#1F5C52" stroke-width="1"/>
+      <text x="660" y="402" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#143E38">Zero-touch</text>
+      <text x="660" y="416" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#143E38">portal (Google)</text>
+
+      <rect x="725" y="380" width="115" height="46" rx="8" fill="#E3EFEA" stroke="#1F5C52" stroke-width="1"/>
+      <text x="782" y="402" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#143E38">Knox Admin</text>
+      <text x="782" y="416" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#143E38">Portal (Samsung)</text>
+
+      <line x1="610" y1="305" x2="572" y2="200" stroke="#1F5C52" stroke-width="2" marker-end="url(#arrowTeal)"/>
+      <line x1="580" y1="200" x2="618" y2="305" stroke="#1F5C52" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrowTeal)"/>
+
+      <rect x="610" y="500" width="230" height="64" rx="10" fill="#3E5266"/>
+      <text x="725" y="526" text-anchor="middle" fill="#fff" font-family="Source Serif 4, serif" font-weight="700" font-size="15">Android device</text>
+      <text x="725" y="544" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="10">Work profile / Fully managed / Dedicated</text>
+      <line x1="660" y1="426" x2="700" y2="498" stroke="#1F5C52" stroke-width="2" marker-end="url(#arrowTeal)"/>
+      <line x1="782" y1="426" x2="745" y2="498" stroke="#1F5C52" stroke-width="2" marker-end="url(#arrowTeal)"/>
+
+      <!-- Conditional access loop -->
+      <path d="M 290 532 C 420 600, 480 600, 605 532" stroke="#3E5266" stroke-width="1.6" fill="none" stroke-dasharray="3 4" marker-end="url(#arrow)"/>
+      <text x="450" y="615" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">compliance status feeds Conditional Access decisions for both platforms</text>
+    </svg>
+    <div class="cap">Fig. 1 — Two vendor ecosystems, one MDM hub. Apple's side runs on Apple Business + ADE tokens; Android's side runs on a Managed Google Play binding, fed by Google's zero-touch portal and/or Samsung's Knox Admin Portal.</div>
+  </div>
+
+  <p>Notice the shape: Entra ID is the identity backbone for <em>both</em> platforms, but Apple and Android each bring their own separate trust relationship into Intune — a downloaded token file from Apple Business on one side, an OAuth binding to a managed Google Play account on the other. Samsung's Knox Mobile Enrollment and Google's zero-touch portal aren't competitors to Android Enterprise — they're <em>provisioning accelerants</em> that sit in front of it, automating how a device first finds its way into that Android Enterprise binding. The same logical split exists on Apple's side: Apple Business is the trust relationship; ADE is the zero-touch delivery mechanism riding on top of it.</p>
+</section>
+
+<section class="block" id="mode-vs-method">
+  <h2><span class="num">03</span>Mode vs. method — the distinction that untangles everything</h2>
+  <p class="lead">Here's the actual source of most beginner confusion, and it's not your fault: Microsoft, Google, and Samsung's own documentation routinely lists two completely different categories of thing side by side, as if they were peers in the same list. They aren't.</p>
+
+  <div class="spec-grid">
+    <div class="spec-field">
+      <span class="spec-label">Management mode — the "what"</span>
+      <p>This is the <em>destination state</em> of the device: what it looks like once enrollment finishes. On Android, the modes are Work Profile (BYOD), Work Profile (corporate-owned / COPE), Fully Managed, and Dedicated. On iOS, the modes are roughly Supervised-via-ADE vs. unsupervised user enrollment. A device has exactly one mode at a time, and modes generally can't be changed in-place — switching means a factory reset.</p>
+    </div>
+    <div class="spec-field">
+      <span class="spec-label">Provisioning method — the "how"</span>
+      <p>This is the <em>mechanism</em> used to get the device from out-of-the-box to that destination state. On Android: zero-touch, Knox Mobile Enrollment, QR code, token/<span class="mono">afw#setup</span>, NFC tag, or the Company Portal app. On iOS: ADE with Setup Assistant, ADE via Apple Configurator, or direct enrollment through the Company Portal app. Several different methods can often land a device in the <em>same</em> mode.</p>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-label">Why this matters</span>
+    <p>When the user's original question asked to cover "Android Enterprise Corporate Owned Work Profile," "Corporate Owned Fully Managed with Work Profile (COPE)," and "Zero Touch Enrollment" as if they were three items in the same list, that's exactly the trap: the first two are the <em>same management mode</em> described two different ways, and the third is a <em>provisioning method</em> that could be used to reach several different modes, including that one. This guide splits Section&nbsp;1 into "Management modes" first, then "Provisioning methods" second, specifically so you stop comparing apples to delivery trucks.</p>
+  </div>
+
+  <div class="diagram-frame">
+    <svg viewBox="0 0 880 220" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="30" width="200" height="160" rx="10" fill="#E3EFEA" stroke="#1F5C52" stroke-width="1.4"/>
+      <text x="120" y="58" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#143E38">PROVISIONING METHOD</text>
+      <text x="120" y="84" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" fill="#1C2321">Zero-touch</text>
+      <text x="120" y="106" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" fill="#1C2321">Knox Mobile Enrollment</text>
+      <text x="120" y="128" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" fill="#1C2321">QR code</text>
+      <text x="120" y="150" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" fill="#1C2321">Token / afw#setup</text>
+      <text x="120" y="172" text-anchor="middle" font-family="Inter, sans-serif" font-size="12.5" fill="#1C2321">NFC tag</text>
+
+      <line x1="220" y1="60" x2="320" y2="60" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="220" y1="100" x2="320" y2="100" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="220" y1="140" x2="320" y2="100" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <line x1="220" y1="170" x2="320" y2="160" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="270" y="48" text-anchor="middle" font-family="Inter, sans-serif" font-style="italic" font-size="10" fill="#80847A">all can lead to...</text>
+
+      <rect x="320" y="20" width="220" height="50" rx="8" fill="#fff" stroke="#92531C" stroke-width="1.3"/>
+      <text x="430" y="50" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Fully Managed mode</text>
+
+      <rect x="320" y="80" width="220" height="50" rx="8" fill="#fff" stroke="#92531C" stroke-width="1.3"/>
+      <text x="430" y="110" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Work Profile (corporate) mode</text>
+
+      <rect x="320" y="140" width="220" height="50" rx="8" fill="#fff" stroke="#92531C" stroke-width="1.3"/>
+      <text x="430" y="170" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Dedicated mode</text>
+
+      <text x="650" y="55" font-family="IBM Plex Mono, monospace" font-size="11" fill="#80847A" text-anchor="middle">The mode is what the</text>
+      <text x="650" y="72" font-family="IBM Plex Mono, monospace" font-size="11" fill="#80847A" text-anchor="middle">device becomes.</text>
+      <text x="650" y="100" font-family="IBM Plex Mono, monospace" font-size="11" fill="#80847A" text-anchor="middle">The method is how</text>
+      <text x="650" y="117" font-family="IBM Plex Mono, monospace" font-size="11" fill="#80847A" text-anchor="middle">it got there.</text>
+    </svg>
+    <div class="cap">Fig. 2 — Several provisioning methods can land a device in the same management mode. Choose the mode first based on ownership and purpose; choose the method second based on how the device was purchased and who's doing the provisioning.</div>
+  </div>
+</section>
+
+<section class="block" id="android-section">
+  <h2 id="android-intro"><span class="num">§1</span>Android device enrollment</h2>
+  <p class="lead">Every current Android Enterprise option in Intune is built on the same foundation: a managed Google Play binding, a Device Policy Controller (the Intune app itself acts as this), and one of four management modes. We'll cover the four modes first — the "what" — then the methods used to provision into them — the "how" — then what's been retired along the way.</p>
+
+  <h3 style="margin-top:2.2em;">Management modes (the "what")</h3>
+  <p>Four modes exist today. Picking the right one starts with two questions: <strong>who owns the device</strong>, and <strong>does it need to support personal use</strong>. Get those two answers and the mode picks itself.</p>
+
+  <div class="datasheet" id="a-work-profile-byod">
+    <div class="datasheet-head">
+      <div>
+        <span class="id-tag">ANDROID · MANAGEMENT MODE · AE-01</span>
+        <h3 class="method-title">Work Profile — Personally-Owned (BYOD)</h3>
+      </div>
+      <div class="datasheet-badges">
+        <span class="pill pill-current">Current</span>
+        <span class="pill pill-byod">BYOD</span>
+      </div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> A walled-off, encrypted container created inside an employee's own Android phone. Work apps, work data, and a separate Managed Google Play store live inside the container; the rest of the phone — personal apps, photos, personal Google account — stays completely outside Intune's reach. <strong>Why it exists:</strong> Organizations need to protect corporate email and data on phones they don't own and can't dictate the full configuration of, while employees reasonably refuse to hand over total control of a device they paid for and use for their personal life. Work profile is Google and Microsoft's answer to that standoff.</p>
+      <div class="spec-grid">
+        <div class="spec-field">
+          <span class="spec-label">Typical use cases</span>
+          <ul><li>Executives and clinicians who want email/Teams on their personal phone</li><li>Field staff using their own Android device for light corporate access</li><li>Any BYOD policy where the org explicitly doesn't want device-wide control</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Device ownership model</span>
+          <p>Personal property of the employee, end to end. Intune's device record marks ownership as "Personal." The org has zero claim to the hardware.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Prerequisites</span>
+          <ul><li>Android 8.0+ device with Google Mobile Services (GMS)</li><li>Tenant bound to a managed Google Play account (Android Enterprise enabled in Intune)</li><li>Intune Company Portal app, installed by the user from the Play Store</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Licensing requirements</span>
+          <p>Intune Plan 1 license assigned to the user (or an EMS/Microsoft 365 bundle that includes it). No device-side license needed since the device isn't org-owned.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Dependencies</span>
+          <ul><li>Entra ID account for the user</li><li>Mobile Application Management / app protection policies if you want to layer MAM controls inside the work profile too</li><li>Enrollment restrictions in Intune must allow personally-owned Android devices</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">User experience during enrollment</span>
+          <p>User installs Company Portal from the regular Play Store, signs in with their work account, and is walked through creating the work profile. A distinct badge appears on work apps' icons on the home screen so personal and work apps are visually distinguishable.</p>
+        </div>
+        <div class="spec-field spec-full">
+          <span class="spec-label">Enrollment workflow</span>
+          <ol>
+            <li>Admin confirms Android Enterprise / managed Google Play binding exists in Intune.</li>
+            <li>Admin creates and assigns a Work Profile enrollment configuration (or relies on the default).</li>
+            <li>User installs Company Portal from Google Play on their own device.</li>
+            <li>User signs in with work credentials; Company Portal detects eligibility and starts work profile setup.</li>
+            <li>Android creates the encrypted work container; Managed Google Play apps begin installing automatically per assignment.</li>
+            <li>User sets a separate work-profile security challenge if required by policy.</li>
+          </ol>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Management capabilities</span>
+          <ul><li>Push/remove apps inside the work profile</li><li>Enforce passcode and encryption on the work side</li><li>Selective wipe of the work profile only</li><li>Block copy/paste from work to personal clipboard</li><li>Restrict screen capture of work apps</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Security implications</span>
+          <p>Strong containment of corporate data, but the org has no visibility into the personal side — it cannot see if the phone's OS is out of date outside what device-wide compliance signals expose, cannot enforce personal-side passcodes, and cannot remote-wipe the entire device.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Limitations</span>
+          <ul><li>No control over personal apps, personal OS settings, or non-work data</li><li>Cannot factory-reset the whole device remotely</li><li>Custom OMA-URI configuration profiles for this mode stopped being supported for new policies in April 2025 — use built-in settings catalog options instead</li></ul>
+        </div>
+        <div class="spec-divider"></div>
+        <div class="spec-field">
+          <span class="spec-label">Advantages</span>
+          <ul><li>High user acceptance — feels fair to BYOD users</li><li>Fast to deploy, no procurement involved</li><li>Strong data separation despite light footprint</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Disadvantages</span>
+          <ul><li>Weakest level of organizational control of any mode</li><li>No supervision-style restrictions available</li><li>User can simply uninstall the work profile, ending management instantly</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Common mistakes admins make</span>
+          <ul><li>Assuming they can wipe the whole personal phone in an offboarding scenario — they can only wipe the work profile</li><li>Forgetting to scope compliance policies separately for personal vs. corporate ownership</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Best practices</span>
+          <ul><li>Pair with an app protection (MAM) policy for defense in depth</li><li>Set clear enrollment restrictions so corporate-owned devices can't accidentally enroll as personal</li><li>Communicate up front exactly what IT can and can't see/do</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="a-work-profile-corp">
+    <div class="datasheet-head">
+      <div>
+        <span class="id-tag">ANDROID · MANAGEMENT MODE · AE-02</span>
+        <h3 class="method-title">Work Profile — Corporate-Owned (COPE)</h3>
+      </div>
+      <div class="datasheet-badges">
+        <span class="pill pill-current">Current</span>
+        <span class="pill pill-corp">Corporate</span>
+      </div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> The organization owns the device outright and has full device-owner control over it, but a work profile is still carved out inside it, so the employee can also install personal apps and use it as their daily phone. Google's current documentation calls this "work profile on a company-owned device"; almost everyone in the field still calls it <strong>COPE</strong> (Corporate-Owned, Personally Enabled). <strong>Why it exists:</strong> Some organizations want to issue a single phone per employee instead of two (one corporate, one personal) while still keeping full device-level control — remote wipe of the whole device, enforced device-wide settings — that personally-owned work profile can't offer.</p>
+      <div class="spec-grid">
+        <div class="spec-field">
+          <span class="spec-label">Typical use cases</span>
+          <ul><li>Field workers issued a single company phone they're allowed to also use personally</li><li>On-call clinical staff who need one device for both work paging apps and personal calls</li><li>Organizations replacing two-device policies with one</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Device ownership model</span>
+          <p>Corporate-owned. Intune records ownership as "Corporate." The organization can factory-reset the entire device at will — this is the device's defining trade-off versus BYOD work profile.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Prerequisites</span>
+          <ul><li>Android 11+ recommended (Google's currently supported COPE baseline; some OEMs require newer)</li><li>Device must be provisioned via a corporate-owned provisioning method (QR, token, zero-touch, or KME) — it cannot become COPE through the Play Store path used for BYOD</li><li>Managed Google Play binding in Intune</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Licensing requirements</span>
+          <p>Intune Plan 1 (user- or device-based, depending on your tenant's licensing model) plus a Device Enrollment Manager account for bulk provisioning if used.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Dependencies</span>
+          <ul><li>A provisioning method (most commonly a QR code or token) to kick off device-owner setup at first boot</li><li>Device naming template configuration (recommended) so bulk-enrolled phones are identifiable in the console</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">User experience during enrollment</span>
+          <p>The user (or IT, during pre-provisioning) scans a QR code or types a token at the Android setup wizard. The device sets itself up as device-owner, then automatically creates a work profile alongside it. The user can then sign into a personal Google account inside the personal side.</p>
+        </div>
+        <div class="spec-field spec-full">
+          <span class="spec-label">Enrollment workflow</span>
+          <ol>
+            <li>Admin creates a Corporate-Owned Work Profile enrollment profile in Intune and generates a QR code or token.</li>
+            <li>Device is factory-reset (or new out of box).</li>
+            <li>At the "Welcome" screen, the provisioning trigger is invoked (tap screen 6 times for QR, or type the token string).</li>
+            <li>Device downloads the Intune app as the Device Policy Controller and sets device-owner mode.</li>
+            <li>A work profile is automatically created inside the now-managed device.</li>
+            <li>User signs in with work credentials to complete setup; personal Google sign-in is optional afterward.</li>
+          </ol>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Management capabilities</span>
+          <ul><li>Everything available in personally-owned work profile, plus:</li><li>Full device wipe / factory reset remotely</li><li>Device-wide restrictions (Wi-Fi config, kiosk exceptions, lost-mode lock and locate)</li><li>Custom device naming templates</li><li>Bluetooth, USB, and personal-side restrictions the org can choose to apply</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Security implications</span>
+          <p>Much stronger posture than BYOD work profile — the org can enforce device-wide encryption, a device-wide lock screen, and remote wipe of everything, including the personal side, on loss or offboarding.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Limitations</span>
+          <ul><li>Requires the org to actually own and issue the hardware — real procurement and asset-management overhead</li><li>Cannot be converted in-place from an already-deployed personal or fully managed device; requires factory reset</li><li>A known issue reported across MDM community forums in 2025 affects COPE enrollment on some Samsung Android 16 devices — Knox Mobile Enrollment is the documented fallback while that's tracked</li></ul>
+        </div>
+        <div class="spec-divider"></div>
+        <div class="spec-field">
+          <span class="spec-label">Advantages</span>
+          <ul><li>One device per person instead of two</li><li>Full wipe capability protects the org if the device is lost or the employee leaves</li><li>Personal use still allowed, supporting adoption</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Disadvantages</span>
+          <ul><li>Procurement and lifecycle management burden falls on the org</li><li>Employees may feel uneasy that the org can wipe a device they also use personally</li><li>More setup complexity than either pure BYOD or pure fully managed</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Common mistakes admins make</span>
+          <ul><li>Provisioning via the wrong method and accidentally landing the device in Fully Managed instead of COPE (no personal profile created)</li><li>Not setting a device naming template before a bulk rollout, leaving hundreds of auto-named devices</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Best practices</span>
+          <ul><li>Pilot on one OEM/Android version combination before a bulk rollout, given known platform-specific enrollment bugs</li><li>Document an explicit "what IT can see and wipe" disclosure for employees, since this is a frequent source of pushback</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="a-fully-managed">
+    <div class="datasheet-head">
+      <div>
+        <span class="id-tag">ANDROID · MANAGEMENT MODE · AE-03</span>
+        <h3 class="method-title">Fully Managed (Device Owner, no personal profile)</h3>
+      </div>
+      <div class="datasheet-badges">
+        <span class="pill pill-current">Current</span>
+        <span class="pill pill-corp">Corporate</span>
+      </div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> The organization owns and controls the entire device, top to bottom, with no work-profile/personal split at all. Everything on the phone is visible and configurable by Intune. <strong>Why it exists:</strong> Some corporate devices are purely tools for the job — a delivery driver's scanner-phone, a single-purpose field tablet — where personal use was never intended and the org wants the simplest possible, fully transparent management model.</p>
+      <div class="spec-grid">
+        <div class="spec-field">
+          <span class="spec-label">Typical use cases</span>
+          <ul><li>Purpose-issued task phones with no personal-use expectation</li><li>Devices that will later be converted into a dedicated/kiosk role</li><li>High-security environments where any personal data on the device is an unacceptable risk</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Device ownership model</span>
+          <p>Fully corporate-owned, recorded as "Corporate" in Intune. No legal or practical claim by the employee to any part of the device.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Prerequisites</span>
+          <ul><li>Android 8.0+ device, GMS present</li><li>A corporate provisioning method (QR/token/zero-touch/KME)</li><li>Managed Google Play binding</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Licensing requirements</span>
+          <p>Intune Plan 1 per device or per assigned user, same baseline as the other Android Enterprise modes.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Dependencies</span>
+          <ul><li>Same provisioning trigger mechanics as COPE — the only difference is the enrollment profile type selected in Intune, which determines whether a work profile gets layered in afterward</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">User experience during enrollment</span>
+          <p>Identical first-boot flow to COPE provisioning (QR/token at setup wizard), but no personal-side Google sign-in step follows — the device stays fully managed end to end.</p>
+        </div>
+        <div class="spec-field spec-full">
+          <span class="spec-label">Enrollment workflow</span>
+          <ol>
+            <li>Admin creates a Fully Managed enrollment profile (as opposed to a Corporate-Owned Work Profile one) and generates the provisioning artifact.</li>
+            <li>Device is factory reset and provisioned via QR, token, zero-touch, or KME, pointing at that profile.</li>
+            <li>Device sets device-owner mode with no accompanying personal container.</li>
+            <li>Compliance and configuration profiles assigned to the device's group apply immediately, device-wide.</li>
+          </ol>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Management capabilities</span>
+          <ul><li>Complete device-wide configuration: Wi-Fi, VPN, certificates, app allow/block lists</li><li>Full remote wipe and factory reset</li><li>Lost mode, remote lock, location</li><li>Can be converted into a Dedicated (kiosk) device later via policy, without re-provisioning</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Security implications</span>
+          <p>The strongest, simplest security posture of the four modes — there is no personal-data boundary to reason about, so policy can be maximally strict without any BYOD-style privacy trade-off.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Limitations</span>
+          <ul><li>Zero personal use — a poor fit if employees expect to use the device outside work</li><li>Same factory-reset requirement to change modes later</li></ul>
+        </div>
+        <div class="spec-divider"></div>
+        <div class="spec-field">
+          <span class="spec-label">Advantages</span>
+          <ul><li>Simplest mode to reason about and audit</li><li>Maximum control with no privacy carve-outs to manage</li><li>Natural stepping-stone to Dedicated mode</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Disadvantages</span>
+          <ul><li>Employees often resent carrying two phones if personal use is expected elsewhere</li><li>Not appropriate for BYOD under any circumstance</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Common mistakes admins make</span>
+          <ul><li>Choosing Fully Managed when COPE was actually what the business wanted, then fielding complaints that staff "can't even add their personal account"</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Best practices</span>
+          <ul><li>Confirm the personal-use expectation with the business owner before picking this mode over COPE — it's the single most consequential decision in the whole Android rollout</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="a-dedicated">
+    <div class="datasheet-head">
+      <div>
+        <span class="id-tag">ANDROID · MANAGEMENT MODE · AE-04</span>
+        <h3 class="method-title">Dedicated Device (Kiosk, formerly COSU)</h3>
+      </div>
+      <div class="datasheet-badges">
+        <span class="pill pill-current">Current</span>
+        <span class="pill pill-corp">Corporate</span>
+      </div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> A Fully Managed device locked to one app, or a tightly curated small set of apps, with the rest of the OS hidden from the user — no home screen, no settings, no way to back out. <strong>Why it exists:</strong> Many corporate Android devices aren't general-purpose phones at all — they're a check-in screen, a barcode scanner, a digital sign, or a single-purpose clinical app on a wall-mounted tablet. Dedicated mode (Google's old term was "corporate-owned, single-use," now deprecated) is purpose-built for exactly that.</p>
+      <div class="spec-grid">
+        <div class="spec-field">
+          <span class="spec-label">Typical use cases</span>
+          <ul><li>Reception check-in kiosks</li><li>Barcode/asset scanners</li><li>Digital signage</li><li>Single-purpose clinical intake tablets</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Device ownership model</span>
+          <p>Corporate-owned, "Corporate" in Intune — there is no scenario where Dedicated mode is appropriate for a personal device.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Prerequisites</span>
+          <ul><li>Android 8.0+, ideally a dedicated-hardware-friendly OEM build</li><li>A Fully Managed enrollment profile with kiosk/Lock Task settings applied on top</li><li>The app(s) to be locked down already published to the Managed Google Play catalog</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Licensing requirements</span>
+          <p>Same Intune Plan 1 baseline; per-device licensing is the common model here since there's frequently no individually assigned user.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Dependencies</span>
+          <ul><li>A Device Enrollment Manager account is strongly recommended for bulk provisioning many kiosk units</li><li>Kiosk configuration profile (single-app or multi-app Lock Task mode)</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">User experience during enrollment</span>
+          <p>Typically zero end-user involvement — IT or a DEM account provisions the device before it ever reaches the front desk or wall mount. The "user" of the finished kiosk never sees a setup wizard at all.</p>
+        </div>
+        <div class="spec-field spec-full">
+          <span class="spec-label">Enrollment workflow</span>
+          <ol>
+            <li>Admin creates a Fully Managed enrollment profile and a kiosk configuration profile specifying allowed app(s).</li>
+            <li>Device provisioned via QR/token/zero-touch/KME against that profile.</li>
+            <li>Kiosk configuration profile applies, locking the launcher to the designated app(s).</li>
+            <li>Device is deployed to its physical location (reception desk, wall mount, scanner dock).</li>
+          </ol>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Management capabilities</span>
+          <ul><li>Single- or multi-app Lock Task mode</li><li>Disable status bar, home/recents buttons, notifications</li><li>Auto-launch app on boot/crash recovery</li><li>Branded boot screens and wallpaper</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Security implications</span>
+          <p>Very low attack surface by design — there's nothing for an opportunistic user to get into beyond the one locked app, which also limits the blast radius if the device is tampered with physically.</p>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Limitations</span>
+          <ul><li>Poor fit for anything requiring flexible, multi-app general use</li><li>Some OEM-specific quirks around exiting Lock Task mode for maintenance</li></ul>
+        </div>
+        <div class="spec-divider"></div>
+        <div class="spec-field">
+          <span class="spec-label">Advantages</span>
+          <ul><li>Tamper-resistant by design</li><li>Predictable, supportable, easy to remotely troubleshoot since the app set is tiny</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Disadvantages</span>
+          <ul><li>Inflexible if business requirements change app needs frequently</li><li>Maintenance (OS updates, app updates) needs a deliberate remote process since there's no user to manually intervene</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Common mistakes admins make</span>
+          <ul><li>Forgetting to allow a maintenance escape mechanism, leaving no way to debug a stuck device on-site without a factory reset</li></ul>
+        </div>
+        <div class="spec-field">
+          <span class="spec-label">Best practices</span>
+          <ul><li>Build in a hidden admin gesture or PIN-protected exit for field troubleshooting</li><li>Use a DEM account and device naming templates for any fleet beyond a handful of units</li></ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="diagram-frame" id="android-decision-tree">
+    <svg viewBox="0 0 880 480" xmlns="http://www.w3.org/2000/svg">
+      <rect x="350" y="10" width="180" height="56" rx="10" fill="#3E5266"/>
+      <text x="440" y="33" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">New Android device</text>
+      <text x="440" y="50" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="10">start here</text>
+
+      <line x1="440" y1="66" x2="440" y2="96" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <polygon points="440,96 540,140 440,184 340,140" fill="#fff" stroke="#92531C" stroke-width="1.6"/>
+      <text x="440" y="135" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#1C2321">Who owns</text>
+      <text x="440" y="151" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#1C2321">the device?</text>
+
+      <line x1="340" y1="140" x2="170" y2="140" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="255" y="130" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">employee</text>
+      <rect x="40" y="115" width="190" height="56" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="135" y="138" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Work Profile</text>
+      <text x="135" y="155" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">— BYOD (AE-01)</text>
+
+      <line x1="440" y1="184" x2="440" y2="214" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="460" y="205" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">organization</text>
+      <polygon points="440,214 560,260 440,306 320,260" fill="#fff" stroke="#92531C" stroke-width="1.6"/>
+      <text x="440" y="252" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" fill="#1C2321">Single locked-down</text>
+      <text x="440" y="268" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" fill="#1C2321">purpose (kiosk/scanner)?</text>
+
+      <line x1="560" y1="260" x2="700" y2="260" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="630" y="250" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">yes</text>
+      <rect x="700" y="232" width="160" height="56" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="780" y="255" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Dedicated</text>
+      <text x="780" y="272" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">device (AE-04)</text>
+
+      <line x1="440" y1="306" x2="440" y2="336" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="460" y="327" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">no</text>
+      <polygon points="440,336 570,384 440,432 310,384" fill="#fff" stroke="#92531C" stroke-width="1.6"/>
+      <text x="440" y="376" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" fill="#1C2321">Allow personal use</text>
+      <text x="440" y="392" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" fill="#1C2321">on this device too?</text>
+
+      <line x1="310" y1="384" x2="190" y2="384" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="250" y="374" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">yes</text>
+      <rect x="20" y="356" width="170" height="56" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="105" y="379" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">COPE — Work Profile</text>
+      <text x="105" y="396" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">corporate-owned (AE-02)</text>
+
+      <line x1="570" y1="384" x2="700" y2="384" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="635" y="374" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">no</text>
+      <rect x="700" y="356" width="160" height="56" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="780" y="379" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Fully Managed</text>
+      <text x="780" y="396" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">(AE-03)</text>
+
+      <text x="440" y="460" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#80847A">Once the mode is chosen, pick a provisioning method below based on how the device was purchased.</text>
+    </svg>
+    <div class="cap">Fig. 3 — Android management-mode decision tree. Ownership and personal-use intent are the only two questions that matter; everything else follows from them.</div>
+  </div>
+
+  <h3 style="margin-top:2.6em;">Provisioning methods (the "how")</h3>
+  <p>These six mechanisms are how a device actually arrives at one of the four modes above. Several can usually be substituted for each other depending on how the hardware was sourced and how hands-on IT wants to be.</p>
+
+  <div class="datasheet" id="b-zero-touch">
+    <div class="datasheet-head">
+      <div><span class="id-tag">ANDROID · PROVISIONING METHOD · AE-P1</span><h3 class="method-title">Zero-Touch Enrollment</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> Google's reseller-integrated provisioning system. A device bought through a certified zero-touch reseller is pre-registered to your organization before it ships; the very first time it's powered on and connects to a network, it automatically pulls down your enrollment configuration with no manual trigger at all. <strong>Why it exists:</strong> Large corporate-owned rollouts (hundreds or thousands of units) can't scale if every device needs someone to scan a QR code by hand.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Large fleet rollouts (hundreds+ devices) of Fully Managed or COPE phones</li><li>Multi-OEM corporate deployments where you don't want to rely on Samsung-only tooling</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned only — zero-touch has no BYOD use case, since it depends on a controlled purchase channel.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>Devices purchased through a certified zero-touch reseller or carrier (not retail)</li><li>Android 9.0+ device support for zero-touch</li><li>A configured zero-touch customer account, linked to your EMM/Intune</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>No extra Google fee; standard Intune Plan 1 still applies per device/user.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>Reseller must actually register devices into your zero-touch portal account at time of sale — a step IT often has to chase the vendor on</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>The closest thing to magic in this whole guide: power on, connect to Wi-Fi, and the device configures itself. No codes, no taps, no IT interaction required at the desk.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Devices purchased through a zero-touch-enabled reseller, tied to your organization's zero-touch account.</li><li>Admin creates a zero-touch configuration in the Google zero-touch portal, pointing at Intune as the EMM and selecting Fully Managed or COPE.</li><li>Configuration assigned to the batch of devices (by reseller order, IMEI, or default).</li><li>End user or IT powers the device on for the first time; it self-provisions against that configuration.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Identical to whichever mode (Fully Managed or COPE) it's configured to provision into — zero-touch itself adds no capabilities, it's purely a delivery mechanism.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Strong: the device is bound to your org's identity before a user ever touches it, closing the window where an unmanaged device could exist.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Reseller dependency — doesn't work for devices bought retail or already in your hands</li><li>Doesn't directly support Dedicated mode provisioning; you provision Fully Managed via zero-touch, then layer kiosk configuration afterward</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>True zero-touch at scale</li><li>Works across OEMs, not Samsung-specific</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Procurement-channel dependent; retrofitting devices you already own isn't possible this way</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Assuming any reseller supports zero-touch — confirm certification before procurement, not after</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Bake zero-touch reseller requirements into your procurement policy up front</li><li>Set a default configuration in the zero-touch portal so devices never sit unassigned</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="b-kme">
+    <div class="datasheet-head">
+      <div><span class="id-tag">ANDROID · PROVISIONING METHOD · AE-P2</span><h3 class="method-title">Samsung Knox Mobile Enrollment (KME)</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> Samsung's own equivalent to zero-touch, exclusively for Samsung Galaxy devices, run through the Knox Admin Portal. <strong>Why it exists:</strong> Samsung supports zero-touch too, but KME predates it and adds Samsung-specific extras (Knox attestation, on-premise EMM support, Dual DAR encryption) that pure Android zero-touch doesn't offer — which is exactly why a Samsung-heavy environment like HNZ's Knox/Android Enterprise estate leans on it.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Samsung-only or Samsung-majority fleets</li><li>Environments needing on-premise EMM enrollment via KME Direct</li><li>Anywhere COPE provisioning is currently misbehaving on stock zero-touch for a given Samsung/Android 16 build, per the 2025 community-reported issue noted earlier</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned. Devices must be uploaded into the Knox Admin Portal under your organization's Knox account.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>Samsung Knox-compatible device (Knox 2.4+)</li><li>An approved Samsung Knox account (approval takes 1–2 business days)</li><li>Devices added to the Knox Admin Portal, by reseller integration or manual IMEI upload</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>Knox Mobile Enrollment itself is free with a Knox account; standard Intune licensing still applies per device.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>Knox Admin Portal profile configured to point at Intune</li><li>Note: KME's old "Device Admin (Deprecated)" profile type should never be used for new enrollments — always select the Android Enterprise profile type in Knox</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>Same hands-off experience as zero-touch: power on, connect, auto-provision. KME Direct (a PC application) also lets IT pre-stage devices over USB in bulk before they ever reach end users, even without internet at the point of staging.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Register for a Knox account; wait for Samsung approval.</li><li>Add devices to the Knox Admin Portal (via reseller integration or IMEI/serial upload).</li><li>Create an Android Enterprise profile in Knox pointing at Intune, choosing Fully Managed or Work Profile (COPE).</li><li>Assign the profile to the device batch.</li><li>Device self-provisions on first boot, or via KME Direct pre-staging.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Whatever the target mode provides, plus Samsung Knox extras like Dual Data-at-Rest encryption and Knox-attested device health checks available to the EMM.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Adds a hardware root-of-trust attestation layer specific to Samsung Knox on top of standard Android Enterprise security.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Samsung devices only</li><li>Knox account approval adds lead time to a rollout plan</li><li>The legacy Device Admin (Deprecated) KME profile type no longer works on Android 11+ — a frequent trap when following outdated tutorials</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Mature, Samsung-optimized, supports on-premise/offline staging via KME Direct</li><li>Documented fallback when stock COPE zero-touch misbehaves on certain Samsung builds</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Vendor lock to Samsung hardware</li><li>Account approval lead time</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Selecting the deprecated Device Admin profile type out of habit from old documentation</li><li>Not budgeting 1–2 business days for Knox account approval before a deployment deadline</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Always choose the Android Enterprise (not Device Admin) profile type in the Knox Admin Portal</li><li>Use KME Direct for pre-staging in low-connectivity sites</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="b-qr">
+    <div class="datasheet-head">
+      <div><span class="id-tag">ANDROID · PROVISIONING METHOD · AE-P3</span><h3 class="method-title">QR Code Enrollment</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> Intune generates a QR code encoding the provisioning details (server, Wi-Fi, profile type); the device's setup wizard scans it (after a six-tap gesture on the welcome screen) and self-configures. <strong>Why it exists:</strong> A reseller- and Samsung-account-free way to manually provision corporate devices without typing long strings — practical for small to mid-size batches, retail-bought hardware, or one-off devices.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Small/medium corporate device batches</li><li>Retail-purchased devices ineligible for zero-touch/KME</li><li>IT staging devices by hand before distribution</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned (Fully Managed or COPE, selected when generating the profile).</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>Android 8.0+, device factory-reset or out of box</li><li>Camera on the device being provisioned, or a second device to display the code</li><li>Wi-Fi network reachable at setup if encoded into the QR payload</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>No additional cost; standard Intune Plan 1 licensing.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>Intune enrollment profile of the desired mode, with "generate QR code" selected</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>At the welcome screen, tap the screen six times in the same spot to trigger QR scanning mode, connect to Wi-Fi if prompted, then scan the printed or displayed code.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Admin creates an enrollment profile (Fully Managed, COPE, or Dedicated) in Intune.</li><li>Admin downloads/generates the QR code for that profile.</li><li>Device factory reset to out-of-box state.</li><li>At welcome screen, six-tap gesture starts QR provisioning; device camera scans the code.</li><li>Device downloads the DPC and completes setup against the encoded configuration.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Whatever the chosen target mode supports — QR is purely a delivery mechanism, same as zero-touch and KME.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Relies on physical/manual handling, so there's a window where the device sits unmanaged until someone actually scans the code — a smaller-scale operational risk than the other methods.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Manual, so it doesn't scale gracefully to very large fleets</li><li>Internet connectivity is required by default for provisioning on Android 13+</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>No reseller relationship or vendor account needed</li><li>Works on virtually any Android Enterprise-eligible device</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Manual, technician-time-intensive at scale</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Forgetting the six-tap gesture only works on a truly factory-reset device — it silently fails on a device that's already been through Setup Wizard once</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Use for pilots and small batches; graduate to zero-touch/KME once volume justifies it</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="b-token">
+    <div class="datasheet-head">
+      <div><span class="id-tag">ANDROID · PROVISIONING METHOD · AE-P4</span><h3 class="method-title">DPC Identifier / Token Enrollment (afw#setup)</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> Instead of scanning a code, the user manually types <code class="mono">afw#setup</code> (Android for Work setup) into the Google account field at the very start of the out-of-box wizard. This downloads the Intune app as the Device Policy Controller and proceeds with corporate provisioning. <strong>Why it exists:</strong> A no-camera, no-network-config-needed fallback that works on essentially any Android Enterprise device with nothing more than a keyboard.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Devices without a usable camera at setup time</li><li>Remote/phone-guided IT support walking a user through setup verbally</li><li>Simple single-device provisioning</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned, same target modes (Fully Managed or COPE) as QR.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>Factory-reset Android 6.0+ device</li><li>Network connectivity to download the DPC after the token is entered</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>No extra cost; standard Intune Plan 1.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>An enrollment profile already created in Intune of the desired target mode</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>At the "Sign in" screen during setup, the user types <code class="mono">afw#setup</code> instead of an email address, then follows prompts to sign in with work credentials and complete provisioning.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Admin ensures the desired enrollment profile exists in Intune.</li><li>Device factory reset to out-of-box state.</li><li>At the account sign-in step, user types <code class="mono">afw#setup</code>.</li><li>Device downloads Intune as DPC, then prompts for work account sign-in to pick up the matching profile.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Identical to the resulting mode (Fully Managed/COPE) — again, purely a delivery mechanism.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Same unmanaged-until-provisioned window as QR; relies on someone correctly typing the token, which introduces light human error risk (typos).</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Entirely manual, one device at a time</li><li>No QR/camera shortcut, so slightly slower per device for sighted users</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Works without a camera or printed code</li><li>Easy to talk someone through over the phone</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Doesn't scale past small batches</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Typing the token into the wrong field (it must go in the Google account email field specifically, not a generic search box)</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Keep this method in your back pocket for remote-support and edge-case scenarios rather than as a primary rollout method</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="b-nfc">
+    <div class="datasheet-head">
+      <div><span class="id-tag">ANDROID · PROVISIONING METHOD · AE-P5</span><h3 class="method-title">NFC Tag Enrollment</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current (narrow use)</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> A physical NFC tag is pre-programmed with provisioning data; tapping a factory-reset device against the tag during setup triggers provisioning. <strong>Why it exists:</strong> Extremely fast physical bulk-staging when IT is physically handling a stack of devices — tap, tap, tap, no typing or scanning required. <strong>Important distinction:</strong> this is different from the old "NFC Beam" (phone-to-phone bump) feature, which Google deprecated starting with Android 10 in favor of this tag-based approach.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Physical staging stations where IT processes many devices by hand</li><li>Environments without reliable Wi-Fi/QR options during staging</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned, same target modes as QR/token.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>NFC-capable Android device, NFC-capable provisioner device, and a programmable NFC tag</li><li>Recommended for Android 10+ specifically because NFC Beam is deprecated</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>No extra cost; standard Intune Plan 1.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>A separate NFC programmer app/device to write the provisioning payload onto the physical tag</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>IT taps the target device against the programmed tag at the welcome screen; provisioning starts automatically.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Admin creates the enrollment profile in Intune.</li><li>Provisioning payload written to a physical NFC tag using a programmer app.</li><li>Factory-reset device tapped against the tag at the welcome screen.</li><li>Device downloads DPC and completes provisioning against the encoded profile.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Identical to whichever target mode is encoded — again, a delivery mechanism only.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Physical proximity requirement (tap distance) limits opportunistic misuse versus a broadcast code.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Niche today — most organizations have moved to QR or token for manual staging since they need no extra hardware</li><li>NFC Beam (the old peer-to-peer variant) doesn't work at all from Android 10 onward</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Very fast physical, one-handed staging once tags are programmed</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Requires extra hardware (tags, programmer) most orgs don't already own</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Confusing this with the deprecated NFC Beam/Bump and assuming it no longer works at all</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Only invest in NFC tag tooling if you're doing high-volume physical staging; otherwise QR/token cover the same ground with less hardware</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="b-companyportal">
+    <div class="datasheet-head">
+      <div><span class="id-tag">ANDROID · PROVISIONING METHOD · AE-P6</span><h3 class="method-title">Company Portal App Enrollment (BYOD Work Profile)</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-byod">BYOD</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> The provisioning method behind Work Profile (BYOD), covered fully under AE-01 above — included here as its own entry because, unlike the other five methods, it's the <em>only</em> path into a personally-owned work profile, and it deserves to be named explicitly as a "method" rather than buried inside the mode description.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><p>Any BYOD work profile rollout — see AE-01 for the full picture.</p></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Personal, always.</p></div>
+        <div class="spec-field"><span class="spec-label">Workflow in one line</span><p>User installs Company Portal from Google Play (never sideloaded, never from an MDM-pushed source, since the device isn't managed yet) → signs in → work profile auto-creates.</p></div>
+        <div class="spec-field"><span class="spec-label">Best practice</span><p>Make sure your enrollment restrictions explicitly permit personally-owned Android devices, or users will hit a blocked-enrollment error with no clear explanation.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 id="android-legacy" style="margin-top:2.6em;">Legacy &amp; deprecated (Android)</h3>
+
+  <div class="callout danger">
+    <span class="callout-label">Deprecated — do not use for new enrollments</span>
+    <p><strong>Android Device Administrator (DA) management.</strong> The original, much weaker Android management API that predates Android Enterprise entirely. Google deprecated it in 2020; Microsoft ended Intune support for device administrator management on any device with access to Google Mobile Services (GMS) at the end of 2024, and by mid-2026 it's fully retired for GMS devices. It survives only in a narrow corner case: devices that genuinely lack GMS (some specialty or region-locked hardware), where Intune still documents a device-administrator path because no Android Enterprise alternative exists for them. If you inherit an environment still running DA-managed GMS devices, migrating them off device administrator and onto a current Android Enterprise mode should be treated as a priority, not a someday task.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-label">Deprecated — superseded</span>
+    <p><strong>NFC Beam / NFC Bump</strong> (peer-to-peer NFC provisioning, distinct from the tag-based NFC enrollment above). Deprecated starting with Android 10. If you find tutorials describing "bump two phones together to enroll," they're describing this retired mechanism — the tag-based method (AE-P5) is its replacement.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-label">Terminology retired, concept current</span>
+    <p><strong>"Corporate-Owned Single-Use" (COSU).</strong> Not gone — just renamed. Google's current term is <strong>Dedicated device</strong> (AE-04). If you see COSU in older blog posts, vendor docs, or exam material, mentally substitute "Dedicated device."</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-label">Custom profile path retired for one mode</span>
+    <p><strong>Custom OMA-URI configuration profiles for personally-owned work profile devices.</strong> Microsoft ended support for creating new custom profiles of this type in April 2025. Existing ones still apply but won't be supported going forward; use the built-in settings catalog and dedicated policy types instead. This restriction is specific to personally-owned work profile devices — custom profiles for device administrator devices are a separate, unaffected case (itself a legacy path, as noted above).</p>
+  </div>
+</section>
+
+<section class="block" id="ios-section">
+  <h2 id="ios-intro"><span class="num">§2</span>iOS / iPadOS device enrollment</h2>
+  <p class="lead">Apple's model splits along a cleaner line than Android's: ownership decides almost everything up front. Organization-owned devices bought through the right channel get <strong>Automated Device Enrollment (ADE)</strong> and full supervision; personally-owned devices get a lighter-touch <strong>User Enrollment</strong>. There's no real equivalent to Android's four-mode spectrum — instead there's a sharper fork, with a couple of bridging options for devices that fall outside the clean cases.</p>
+
+  <div class="callout info">
+    <span class="callout-label">Naming note, read this once</span>
+    <p>Throughout this section you'll see <strong>Apple Business</strong> used as the current name for what was, until April 14, 2026, called <strong>Apple Business Manager (ABM)</strong>. The mechanics — tokens, ADE, Managed Apple Accounts — are unchanged. Microsoft's own Intune documentation switched to "Apple Business" in its April–May 2026 updates, but you'll still hear "ABM" everywhere in practice, including from Apple's own legacy URLs. This guide uses "Apple Business" going forward and calls out "ABM" parenthetically where it helps.</p>
+  </div>
+
+  <div class="datasheet" id="i-ade-modern">
+    <div class="datasheet-head">
+      <div><span class="id-tag">iOS/iPadOS · ENROLLMENT METHOD · IOS-01</span><h3 class="method-title">Automated Device Enrollment (ADE) — Setup Assistant with Modern Authentication</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current · recommended</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> Apple's zero-touch enrollment for organization-owned iPhones and iPads, using Apple's modern, MFA-capable authentication during the on-device Setup Assistant. The device is linked to your organization in Apple Business before it ships; first power-on finds Intune automatically. <strong>Why it exists:</strong> Hospitals, retailers, schools — anyone deploying corporate-owned Apple hardware at any real scale — needs devices to arrive pre-configured and supervised without a technician manually touching each one.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Clinician-issued iPhones</li><li>Executive corporate-owned iPhones/iPads</li><li>Any organization-owned Apple device needing supervision-level restrictions</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned, supervised. This is the only iOS method in this guide that yields a supervised device.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>New or wiped iOS/iPadOS device purchased through an eligible channel that feeds Apple Business</li><li>Intune Plan 1 (minimum) for iOS/iPadOS management</li><li>An Apple MDM push certificate configured in Intune</li><li>An active ADE token (.p7m file) linking Apple Business to Intune</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>Intune Plan 1 per assigned user/device; Apple Business itself is free to register for.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>Apple Business account, approved and configured</li><li>Devices synced from Apple Business to Intune and assigned to an enrollment policy</li><li>Company Portal deployed through Intune itself (never the App Store version) for automatic delivery and updates</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience during enrollment</span><p>User unboxes the device, connects to Wi-Fi, and Setup Assistant walks them through signing in with Entra ID credentials (with MFA if required) — Company Portal is pre-delivered, so there's no separate app-store detour. Enrollment SSO can carry that one authentication through to subsequent app sign-ins.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Get an Apple MDM push certificate and add it to Intune.</li><li>Create an MDM server token for Intune inside Apple Business; download the .p7m token.</li><li>Upload the token to Intune, creating the trust relationship.</li><li>New/wiped devices purchased through Apple Business automatically sync into Intune's device list.</li><li>Create an ADE enrollment profile choosing "Setup Assistant with modern authentication," and assign it to the synced devices.</li><li>Deploy Company Portal through Intune as a required app for the assignment group.</li><li>Device is wiped/reset, then distributed; on first boot it pulls down the policy automatically.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><ul><li>Full supervised-device restriction set (block AirDrop, silently install/remove apps, Single App Mode, content filtering)</li><li>Declarative Device Management (DDM) by default for fast, proactive compliance reporting</li><li>Platform SSO support and Enrollment SSO for streamlined auth</li><li>Device-wide compliance and configuration profiles</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>The strongest posture available on iOS — supervision plus mandatory, tamper-resistant enrollment (the user cannot remove the management profile) makes this the right baseline for any device handling protected health information.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Requires devices to come from an eligible purchase channel — a device bought at a generic consumer retailer typically doesn't enter ADE</li><li>Wiping is required before re-enrollment if a device was previously set up differently</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>True zero-touch at scale, same promise as Android zero-touch</li><li>Maximum management depth of any iOS method</li><li>Enforced, non-removable enrollment</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Purchase-channel dependency</li><li>Full reset needed to bring an already-deployed device into ADE after the fact</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Pushing Company Portal via the App Store instead of through Intune — this breaks automatic updates and isn't supported for ADE devices</li><li>Forgetting to renew the ADE and MDM push certificate tokens before they expire, silently breaking enrollment for everyone</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Calendar-remind certificate/token renewals well ahead of expiry</li><li>Default to "Setup Assistant with modern authentication" over the legacy option for every new ADE profile</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="i-ade-configurator">
+    <div class="datasheet-head">
+      <div><span class="id-tag">iOS/iPadOS · ENROLLMENT METHOD · IOS-02</span><h3 class="method-title">ADE via Apple Configurator (Manual Assignment)</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> A way to manually add devices into ADE that didn't arrive through an automatically-syncing purchase channel — for example, devices bought before your Apple Business account existed, or transferred from another part of the business. Apple Configurator (a Mac app) reads each device's serial number and assigns it into Apple Business directly. <strong>Why it exists:</strong> Not every corporate-owned Apple device follows a clean reseller-to-Apple-Business pipeline; this is the manual on-ramp for the rest.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Pre-existing corporate devices bought before Apple Business was set up</li><li>Devices transferred between business units or acquired through a merger</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned, supervised — once assigned, it follows the same ADE workflow as IOS-01.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>A Mac running Apple Configurator</li><li>Physical access to each device (USB connection) for the initial assignment step</li><li>An Apple Business account with appropriate role permissions</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>Same Intune Plan 1 baseline as standard ADE; Apple Configurator itself is free.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>Device must be erased/reset before reassignment if it was previously configured under a personal Apple ID</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>Once assigned, identical to standard ADE — Setup Assistant with modern authentication picks up from there.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Connect device via USB to a Mac running Apple Configurator.</li><li>Erase the device if it has an existing personal configuration.</li><li>Use Configurator to assign the device's serial number into your Apple Business account.</li><li>Device now appears in Apple Business/Intune sync, and follows the standard ADE profile assignment flow from there.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Identical to standard ADE post-assignment.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Same end state as ADE, but with a manual assignment step that introduces a brief unmanaged window per device.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Requires hands-on, one-device-at-a-time USB connection — doesn't scale like a reseller-fed pipeline</li><li>Needs a Mac, which not every Windows-centric IT shop has readily available</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Brings "orphaned" devices into the same supervised, zero-touch-on-reset state as properly channel-purchased ones</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Manual, slower, Mac-dependent</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Forgetting to erase a device that already has a personal Apple ID signed in before reassigning it, leading to a confusing partial-state device</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Use this once to clean up legacy inventory, then route every future purchase through a properly linked Apple Business reseller relationship so this step isn't needed again</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="i-device-cp">
+    <div class="datasheet-head">
+      <div><span class="id-tag">iOS/iPadOS · ENROLLMENT METHOD · IOS-03</span><h3 class="method-title">Device Enrollment with Company Portal (Direct Enrollment)</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current, narrower role today</span><span class="pill pill-byod">BYOD-leaning</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> A full-device MDM enrollment performed by the user themselves through the Company Portal app — the device becomes fully managed (not just a User Enrollment-style partial management), but without ADE's supervision or zero-touch delivery. <strong>Why it exists:</strong> Covers personal or corporate-owned devices that need full MDM management but aren't going through ADE — for example, a personal iPhone where the organization needs more control than User Enrollment allows, or a corporate device acquired outside ADE's reach that still needs full management rather than just User Enrollment's lighter touch.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Personal devices where the organization needs full device management, not just app-level control</li><li>Corporate devices that can't go through ADE for some reason but still need full MDM depth</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Configurable — can be marked personal or corporate depending on the enrollment policy and organizational process, but the device is always unsupervised since it didn't go through ADE.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>Company Portal installed from the App Store (the standard public path, unlike ADE devices)</li><li>Apple MDM push certificate configured in Intune</li><li>iOS 13+ recommended</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>Intune Plan 1 per user.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>An enrollment policy in Intune configured for "Device enrollment with Company Portal" rather than account-driven user enrollment</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>User installs Company Portal from the App Store, signs in, and is walked through installing a management profile from Settings — a more hands-on, multi-step process than ADE or account-driven enrollment.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Admin creates an enrollment policy choosing "Device enrollment with Company Portal."</li><li>User installs Company Portal app from the App Store.</li><li>User signs in with work account.</li><li>Company Portal directs the user to Settings to download and install the management profile.</li><li>User confirms installation; device becomes fully managed.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><p>Full device-level MDM management (similar depth to ADE's configuration/compliance capability), but without supervision-only restrictions — the user retains the ability to remove the management profile, ending enrollment.</p></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Stronger than User Enrollment but weaker than ADE — the org can see and configure more of the device, but enforcement isn't tamper-resistant the way ADE's mandatory profile is.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Not supervised — several restriction categories simply aren't available</li><li>User can opt out at any time by removing the management profile</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Deeper management than User Enrollment without requiring ADE/procurement-channel purchase</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>On a personal device, full MDM visibility raises real privacy concerns for end users — most organizations now prefer Account-Driven User Enrollment for BYOD specifically to avoid this</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Defaulting every BYOD iPhone to this method out of habit, when Account-Driven User Enrollment is the better-scoped, more privacy-respecting current choice</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Reserve this for corporate-owned edge cases that can't go through ADE; use Account-Driven User Enrollment for genuine BYOD</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="i-account-driven">
+    <div class="datasheet-head">
+      <div><span class="id-tag">iOS/iPadOS · ENROLLMENT METHOD · IOS-04</span><h3 class="method-title">Account-Driven User Enrollment</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current · recommended for BYOD</span><span class="pill pill-byod">BYOD</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> Apple's current, privacy-respecting BYOD enrollment. The user adds their work account directly through Settings → VPN &amp; Device Management — no Company Portal app required to initiate it — and a separate, cryptographically isolated <strong>managed Apple Account</strong> partition is created on the device specifically for work data. <strong>Why it exists:</strong> Replaces the older profile-based User Enrollment with a cleaner architecture and stronger personal/work data separation, and is Apple's clear current direction for personally-owned device management.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Any personal iPhone/iPad accessing corporate email, Teams, or other Microsoft 365 data</li><li>Executives and clinicians who decline a corporate-issued device</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Personal, unsupervised, by design — Apple deliberately withholds supervision-grade controls from any User Enrollment variant to protect personal device owners.</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>iOS/iPadOS with account-driven enrollment support (recent iOS versions)</li><li>Apple MDM push certificate configured in Intune</li><li>An enrollment policy in Intune set to account-driven user enrollment</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>Intune Plan 1 per user.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>Enrollment SSO support helps reduce repeated authentication prompts during setup</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>User goes to Settings → VPN &amp; Device Management → Sign in to work or school account, authenticates, and the managed Apple Account partition is created automatically. The Company Portal web app can be pinned to the home screen afterward for status checks, but isn't required to start enrollment.</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Admin configures an enrollment policy for account-driven user enrollment.</li><li>User opens Settings → General → VPN &amp; Device Management and adds their work account.</li><li>Device authenticates the user via Entra ID, with MFA if configured.</li><li>iOS creates a separate managed Apple Account partition for work data, leaving the rest of the device untouched.</li><li>Optionally, the admin deploys the Company Portal web app shortcut for ongoing device status visibility.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><ul><li>Manage and selectively wipe only the work-data partition</li><li>Push managed apps and configuration scoped to work data</li><li>Enforce a separate passcode for the work partition if required</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Strong cryptographic separation between personal and work data, with zero visibility into the personal side — the closest iOS equivalent to Android's work profile philosophy.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>No supervision-level restrictions, ever</li><li>Smaller management surface than full MDM enrollment by design</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Best-in-class privacy story for BYOD on iOS today</li><li>No app-store detour required to start enrollment</li><li>Apple's clear current direction — investing here pays off long-term</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Limited management depth versus a corporate device — appropriate trade-off for BYOD, but not a substitute when full control is genuinely required</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Still pointing BYOD users at the deprecated profile-based Company Portal User Enrollment out of old habit or outdated internal documentation</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Make this your default BYOD iOS enrollment policy going forward</li><li>Pair with an app protection (MAM) policy on Outlook/Teams for layered data protection</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="datasheet" id="i-shared-ipad">
+    <div class="datasheet-head">
+      <div><span class="id-tag">iOS/iPadOS · ENROLLMENT METHOD · IOS-05</span><h3 class="method-title">Shared iPad</h3></div>
+      <div class="datasheet-badges"><span class="pill pill-current">Current</span><span class="pill pill-corp">Corporate</span></div>
+    </div>
+    <div class="datasheet-body">
+      <p class="datasheet-def"><strong>What it is:</strong> A single corporate-owned iPad, enrolled via ADE <em>without user affinity</em>, configured so multiple people can sign in and out, each getting their own private partition for apps, data, and preferences. <strong>Why it exists:</strong> Ward iPads, shift-based clinical tablets, and shared front-desk devices need to serve many different staff members across a day without mixing anyone's data — buying one iPad per nurse per shift isn't realistic.</p>
+      <div class="spec-grid">
+        <div class="spec-field"><span class="spec-label">Typical use cases</span><ul><li>Nursing-station or ward iPads shared across shifts</li><li>Any rotating-staff scenario needing personalized but temporary access</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Device ownership model</span><p>Corporate-owned, supervised, enrolled without user affinity (the device isn't tied to one person at enrollment time).</p></div>
+        <div class="spec-field"><span class="spec-label">Prerequisites</span><ul><li>iPad meeting Shared iPad's minimum hardware/storage requirements</li><li>ADE enrollment via Apple Business/School Manager</li><li>Entra ID federated with Apple Business so sign-in can use Entra credentials directly</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Licensing requirements</span><p>Intune Plan 1 per device; no extra per-user fee for the shared model itself.</p></div>
+        <div class="spec-field"><span class="spec-label">Dependencies</span><ul><li>A dynamic device group to auto-assign the Shared iPad enrollment policy</li><li>Federation between Entra ID and Apple Business for Managed Apple Account auto-creation</li></ul></div>
+        <div class="spec-field"><span class="spec-label">User experience</span><p>A nurse picks up any Shared iPad on the ward, signs in with their Entra ID username and password, and lands in their own personalized partition — apps, recent documents, and preferences exactly as they left them, even if it's a physically different iPad than last time (with iCloud backup of partitions enabled).</p></div>
+        <div class="spec-field spec-full"><span class="spec-label">Enrollment workflow</span><ol><li>Go to Devices &gt; iOS/iPadOS &gt; Enrollment &gt; Enrollment program tokens; choose the token, then Profiles.</li><li>Create an iOS/iPadOS profile; under management settings, set User affinity to "Enroll without user affinity," Supervised to Yes, and Shared iPad to Yes.</li><li>Assign the profile to the target devices, ideally via a dynamic group.</li><li>Federate Entra ID with Apple Business so a Managed Apple Account is auto-created matching each user's Entra username on first sign-in.</li><li>Distribute iPads to the ward/unit; staff sign in and out as needed.</li></ol></div>
+        <div class="spec-field"><span class="spec-label">Management capabilities</span><ul><li>Per-user partitioning with optional iCloud backup of partitions for continuity across devices</li><li>All standard supervised-device restrictions, applied device-wide</li><li>Configurable maximum number of cached user partitions per device</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Security implications</span><p>Strong per-user data isolation on shared hardware — exactly the property a multi-staff clinical environment needs to stay compliant with patient-data handling expectations.</p></div>
+        <div class="spec-field"><span class="spec-label">Limitations</span><ul><li>Several Conditional Access configurations aren't supported with Shared iPad — specifically conditions requiring an approved client app, an app protection policy, per-device terms of use, device-compliance marking, or device filters</li><li>User-assigned policies don't show up cleanly in Intune device-based reports</li></ul></div>
+        <div class="spec-divider"></div>
+        <div class="spec-field"><span class="spec-label">Advantages</span><ul><li>Purpose-built for exactly the shared-clinical-device problem</li><li>Entra ID federation makes sign-in frictionless and familiar to staff</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Disadvantages</span><ul><li>Conditional Access gaps mean you can't lean on every CA control you might use elsewhere</li><li>Minimum hardware requirements rule out older/cheaper iPad models</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Common mistakes admins make</span><ul><li>Assuming all Conditional Access policies will work unchanged on Shared iPad and discovering the unsupported list only after rollout</li></ul></div>
+        <div class="spec-field"><span class="spec-label">Best practices</span><ul><li>Review the Shared iPad Conditional Access limitations before designing your access policies, not after</li><li>Federate Entra ID with Apple Business early — it's what makes the sign-in experience feel native to staff</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info" id="i-asm">
+    <span class="callout-label">Apple School Manager (ASM) — mentioned for completeness</span>
+    <p>ASM is Apple Business's education-sector sibling, used by schools and universities rather than businesses or health systems. It uses identical ADE mechanics to everything described above — the only practical difference for an Intune admin is which Apple portal issued the token. For a healthcare tenant like HNZ, Apple Business is the relevant one; ASM is included here purely so the picture is complete, per the original ask.</p>
+  </div>
+</section>
+
+<section class="block">
+  <div class="diagram-frame" id="ios-decision-tree">
+    <svg viewBox="0 0 900 520" xmlns="http://www.w3.org/2000/svg">
+      <rect x="360" y="10" width="180" height="54" rx="10" fill="#3E5266"/>
+      <text x="450" y="32" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">New iPhone / iPad</text>
+      <text x="450" y="49" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="10">start here</text>
+
+      <line x1="450" y1="64" x2="450" y2="94" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <polygon points="450,94 555,138 450,182 345,138" fill="#fff" stroke="#92531C" stroke-width="1.6"/>
+      <text x="450" y="133" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#1C2321">Who owns</text>
+      <text x="450" y="149" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#1C2321">the device?</text>
+
+      <line x1="345" y1="138" x2="160" y2="138" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="250" y="128" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">employee (personal)</text>
+      <rect x="20" y="110" width="220" height="58" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="130" y="135" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Account-Driven</text>
+      <text x="130" y="153" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">User Enrollment (IOS-04)</text>
+
+      <line x1="450" y1="182" x2="450" y2="212" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="475" y="203" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">organization</text>
+      <polygon points="450,212 600,262 450,312 300,262" fill="#fff" stroke="#92531C" stroke-width="1.6"/>
+      <text x="450" y="252" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#1C2321">Purchased through an</text>
+      <text x="450" y="268" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#1C2321">ADE-eligible channel</text>
+      <text x="450" y="284" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#1C2321">(Apple Business)?</text>
+
+      <line x1="300" y1="262" x2="150" y2="262" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="225" y="252" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">no</text>
+      <rect x="10" y="234" width="280" height="58" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="150" y="258" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12" fill="#1C2321">Apple Configurator assignment</text>
+      <text x="150" y="276" text-anchor="middle" font-family="Inter, sans-serif" font-size="10.5" fill="#3E5266">(IOS-02) → then standard ADE, or fall back to IOS-03</text>
+
+      <line x1="600" y1="262" x2="750" y2="262" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="675" y="252" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">yes</text>
+      <polygon points="750,234 870,262 750,290 630,262" fill="#fff" stroke="#92531C" stroke-width="1.4"/>
+      <text x="750" y="258" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#1C2321">Shared among</text>
+      <text x="750" y="272" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#1C2321">staff?</text>
+
+      <line x1="750" y1="290" x2="750" y2="330" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="775" y="315" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">yes</text>
+      <rect x="650" y="330" width="200" height="56" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="750" y="353" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">Shared iPad</text>
+      <text x="750" y="370" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">(IOS-05)</text>
+
+      <line x1="630" y1="262" x2="520" y2="330" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="540" y="300" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">no</text>
+      <rect x="400" y="330" width="220" height="56" rx="10" fill="#E4EAF0" stroke="#3E5266" stroke-width="1.4"/>
+      <text x="510" y="353" text-anchor="middle" font-family="Inter, sans-serif" font-weight="600" font-size="12.5" fill="#1C2321">ADE — Setup Assistant</text>
+      <text x="510" y="370" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#3E5266">modern auth (IOS-01)</text>
+
+      <text x="450" y="470" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#80847A">Ownership decides the fork; ADE-eligibility and sharing decide which branch you land on.</text>
+    </svg>
+    <div class="cap">Fig. 4 — iOS/iPadOS enrollment decision tree. The cleanest fork in this guide: personal devices go one way, organization-owned devices go another, with sharing as the only further branch.</div>
+  </div>
+
+  <h3 id="ios-legacy">Legacy &amp; deprecated (iOS / iPadOS)</h3>
+
+  <div class="callout danger">
+    <span class="callout-label">Deprecated — no longer available for new enrollments</span>
+    <p><strong>Apple User Enrollment with Company Portal (profile-based).</strong> The predecessor to Account-Driven User Enrollment. As of Intune's April 2026 documentation, this enrollment option is deprecated and unavailable for newly enrolled devices — existing devices already enrolled this way continue to receive support, but every new BYOD rollout should use Account-Driven User Enrollment (IOS-04) instead.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-label">Legacy — not recommended</span>
+    <p><strong>Setup Assistant (Legacy)</strong> for ADE. Still selectable as an authentication option when creating an ADE enrollment policy, but Microsoft no longer recommends it — it lacks the multifactor authentication and just-in-time registration support that "Setup Assistant with modern authentication" provides. Choose modern authentication for every new ADE profile.</p>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-label">Ending — legacy software-update commands</span>
+    <p><strong>Legacy MDM software-update commands and payloads.</strong> With iOS 26, iPadOS 26, and macOS 26, Apple deprecated the older software-update command set in favor of Declarative Device Management's update model, and Intune is winding down support for the legacy commands accordingly. Not an enrollment method itself, but worth knowing if you're auditing older update-policy configurations alongside an enrollment refresh.</p>
+  </div>
+</section>
+
+<section class="block" id="comparison-tables">
+  <h2><span class="num">§3</span>Comparison tables</h2>
+  <p class="lead">Two tables. The first compares every <em>management mode/enrollment method</em> across both platforms on the dimensions that actually drive decisions. The second zooms into Android's provisioning methods specifically, since those don't carry their own ownership/privacy story — they only differ in how they get a device into a mode.</p>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Table 1 — Enrollment methods at a glance, Android &amp; iOS/iPadOS</caption>
+      <thead>
+        <tr><th>Method</th><th>Platform</th><th>Ownership</th><th>Management depth</th><th>User privacy</th><th>Complexity to deploy</th><th>Best for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="hl">Work Profile — BYOD</td><td>Android</td><td>Personal</td><td>Low (work container only)</td><td>High</td><td>Low</td><td>BYOD email/Teams access</td></tr>
+        <tr><td class="hl">Work Profile — COPE</td><td>Android</td><td>Corporate</td><td>High</td><td>Medium</td><td>Medium</td><td>One issued phone, personal use allowed</td></tr>
+        <tr><td class="hl">Fully Managed</td><td>Android</td><td>Corporate</td><td>Very high</td><td>None (no personal use)</td><td>Low–Medium</td><td>Task-only corporate phones</td></tr>
+        <tr><td class="hl">Dedicated (kiosk)</td><td>Android</td><td>Corporate</td><td>Very high, single-purpose</td><td>None</td><td>Medium</td><td>Kiosks, scanners, signage</td></tr>
+        <tr><td class="hl">ADE — Setup Assistant (modern auth)</td><td>iOS/iPadOS</td><td>Corporate</td><td>Very high, supervised</td><td>None (org-owned)</td><td>Medium</td><td>Clinician/exec corporate iPhones</td></tr>
+        <tr><td class="hl">ADE via Apple Configurator</td><td>iOS/iPadOS</td><td>Corporate</td><td>Very high, supervised</td><td>None</td><td>Medium–High (manual, per device)</td><td>Legacy corporate inventory onboarding</td></tr>
+        <tr><td class="hl">Device Enrollment with Company Portal</td><td>iOS/iPadOS</td><td>Personal or corporate</td><td>High, unsupervised</td><td>Medium</td><td>Low</td><td>Edge cases outside ADE's reach</td></tr>
+        <tr><td class="hl">Account-Driven User Enrollment</td><td>iOS/iPadOS</td><td>Personal</td><td>Low (work data partition only)</td><td>High</td><td>Low</td><td>BYOD email/Teams access</td></tr>
+        <tr><td class="hl">Shared iPad</td><td>iOS/iPadOS</td><td>Corporate</td><td>Very high, supervised, multi-user</td><td>None (org-owned)</td><td>Medium–High</td><td>Ward/shift-shared clinical tablets</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Table 2 — Android provisioning methods compared</caption>
+      <thead>
+        <tr><th>Method</th><th>Scales to</th><th>Device source requirement</th><th>Extra hardware needed</th><th>Manual steps per device</th><th>Best for</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="hl">Zero-touch</td><td>Hundreds–thousands</td><td>Certified zero-touch reseller</td><td>None</td><td>None — power on only</td><td>Large multi-OEM rollouts</td></tr>
+        <tr><td class="hl">Knox Mobile Enrollment</td><td>Hundreds–thousands</td><td>Samsung Knox account, devices uploaded to portal</td><td>None (KME Direct PC app optional for offline staging)</td><td>None — power on only</td><td>Samsung-heavy fleets</td></tr>
+        <tr><td class="hl">QR code</td><td>Tens–low hundreds</td><td>None — any retail device works</td><td>Camera</td><td>6-tap gesture + scan</td><td>Small/medium batches, pilots</td></tr>
+        <tr><td class="hl">Token (afw#setup)</td><td>Single digits–tens</td><td>None</td><td>None</td><td>Manual token entry</td><td>Remote/phone-guided setup, no camera</td></tr>
+        <tr><td class="hl">NFC tag</td><td>Tens (physical staging)</td><td>None</td><td>NFC tag + programmer</td><td>Physical tap</td><td>High-volume hands-on physical staging</td></tr>
+        <tr><td class="hl">Company Portal (BYOD)</td><td>Unlimited, self-service</td><td>None — personal device</td><td>None</td><td>User-driven app install + sign-in</td><td>The only path into Work Profile BYOD</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-label">Reading the tables together</span>
+    <p>Notice Table 1 has no row for "Zero-touch" or "QR code" — that's the mode-vs-method split from Section&nbsp;03 in action. Table 1 tells you <em>what you end up with</em>; Table 2 tells you <em>how you got there</em>. The two tables are meant to be read together: pick a row from Table 1, then pick a delivery mechanism from Table 2 that fits your procurement reality.</p>
+  </div>
+</section>
+
+<section class="block" id="diagrams-section">
+  <h2><span class="num">§4</span>Visual diagrams</h2>
+  <p class="lead">Two more diagrams round out the picture: the full lifecycle a device moves through (enrollment is only one phase of several), and the authentication handshake that happens at the moment of enrollment, regardless of which method delivered the device there.</p>
+
+  <div class="diagram-frame" id="lifecycle-diagram">
+    <svg viewBox="0 0 760 760" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="380" cy="380" r="300" fill="none" stroke="#DCD5C2" stroke-width="2" stroke-dasharray="2 6"/>
+      <!-- 5 stages around the circle -->
+      <g>
+        <circle cx="380" cy="70" r="62" fill="#1F5C52"/>
+        <text x="380" y="64" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">1. Procure</text>
+        <text x="380" y="82" text-anchor="middle" fill="#D7E9E2" font-family="IBM Plex Mono, monospace" font-size="9.5">reseller / Apple Business /</text>
+        <text x="380" y="94" text-anchor="middle" fill="#D7E9E2" font-family="IBM Plex Mono, monospace" font-size="9.5">Knox Admin Portal</text>
+      </g>
+      <g>
+        <circle cx="660" cy="290" r="62" fill="#3E5266"/>
+        <text x="660" y="280" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">2. Enroll</text>
+        <text x="660" y="298" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="9.5">ADE / zero-touch / KME /</text>
+        <text x="660" y="310" text-anchor="middle" fill="#D6DEE8" font-family="IBM Plex Mono, monospace" font-size="9.5">QR / token / account-driven</text>
+      </g>
+      <g>
+        <circle cx="565" cy="600" r="62" fill="#92531C"/>
+        <text x="565" y="592" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">3. Configure</text>
+        <text x="565" y="610" text-anchor="middle" fill="#F3E5D2" font-family="IBM Plex Mono, monospace" font-size="9.5">compliance + config profiles,</text>
+        <text x="565" y="622" text-anchor="middle" fill="#F3E5D2" font-family="IBM Plex Mono, monospace" font-size="9.5">apps, Conditional Access</text>
+      </g>
+      <g>
+        <circle cx="195" cy="600" r="62" fill="#92531C"/>
+        <text x="195" y="592" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">4. Manage</text>
+        <text x="195" y="610" text-anchor="middle" fill="#F3E5D2" font-family="IBM Plex Mono, monospace" font-size="9.5">DDM/Android Mgmt API monitor,</text>
+        <text x="195" y="622" text-anchor="middle" fill="#F3E5D2" font-family="IBM Plex Mono, monospace" font-size="9.5">patch, support, audit</text>
+      </g>
+      <g>
+        <circle cx="100" cy="290" r="62" fill="#8C3B33"/>
+        <text x="100" y="280" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="13">5. Retire</text>
+        <text x="100" y="298" text-anchor="middle" fill="#F3DFDA" font-family="IBM Plex Mono, monospace" font-size="9.5">selective/full wipe,</text>
+        <text x="100" y="310" text-anchor="middle" fill="#F3DFDA" font-family="IBM Plex Mono, monospace" font-size="9.5">unassign from ADE/Knox</text>
+      </g>
+
+      <!-- connecting arcs (arrowheads only, simplified as curved paths) -->
+      <path d="M 432 95 C 520 130, 600 190, 630 240" stroke="#52584F" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+      <path d="M 650 350 C 660 430, 630 510, 600 555" stroke="#52584F" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+      <path d="M 503 615 C 420 660, 320 660, 257 615" stroke="#52584F" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+      <path d="M 160 555 C 130 510, 105 430, 105 352" stroke="#52584F" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+      <path d="M 128 240 C 158 190, 240 130, 328 95" stroke="#52584F" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="0"/>
+
+      <text x="380" y="385" text-anchor="middle" font-family="Source Serif 4, serif" font-weight="700" font-size="17" fill="#1C2321">Device</text>
+      <text x="380" y="405" text-anchor="middle" font-family="Source Serif 4, serif" font-weight="700" font-size="17" fill="#1C2321">lifecycle</text>
+      <text x="380" y="425" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">retire feeds back to procure on refresh</text>
+    </svg>
+    <div class="cap">Fig. 5 — Enrollment is stage 2 of 5. A huge share of "enrollment problems" reported to IT are actually stage-3 configuration issues, or stage-5 leftovers (a device never unassigned from Apple Business or the zero-touch portal before resale/reuse) — worth remembering when triaging.</div>
+  </div>
+
+  <div class="diagram-frame" id="auth-flow-diagram">
+    <svg viewBox="0 0 880 380" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="30" width="140" height="50" rx="8" fill="#3E5266"/>
+      <text x="90" y="60" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="12">Device</text>
+
+      <rect x="20" y="300" width="140" height="50" rx="8" fill="#1F5C52"/>
+      <text x="90" y="330" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="12">Intune</text>
+
+      <rect x="370" y="30" width="160" height="50" rx="8" fill="#3E5266"/>
+      <text x="450" y="60" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="12">Microsoft Entra ID</text>
+
+      <rect x="370" y="300" width="160" height="50" rx="8" fill="#3E5266"/>
+      <text x="450" y="324" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="11.5">Conditional Access /</text>
+      <text x="450" y="340" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="11.5">MFA challenge</text>
+
+      <rect x="700" y="30" width="160" height="50" rx="8" fill="#92531C"/>
+      <text x="780" y="55" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="11.5">Apple Business /</text>
+      <text x="780" y="71" text-anchor="middle" fill="#fff" font-family="Inter, sans-serif" font-weight="600" font-size="11.5">Managed Google Play</text>
+
+      <line x1="160" y1="55" x2="368" y2="55" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="265" y="45" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A">1. user enters work/school account</text>
+
+      <line x1="450" y1="80" x2="450" y2="298" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="475" y="190" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A">2. MFA challenge if required</text>
+
+      <line x1="370" y1="325" x2="162" y2="325" stroke="#52584F" stroke-width="2" marker-end="url(#arrow)"/>
+      <text x="265" y="315" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A">3. token issued to device → Intune</text>
+
+      <path d="M 90 300 C 90 200, 90 130, 90 82" stroke="#52584F" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+      <text x="60" y="190" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A" transform="rotate(-90 60 190)" text-anchor="middle">4. policy &amp; profile push</text>
+
+      <path d="M 160 55 C 400 -20, 650 -20, 780 28" stroke="#92531C" stroke-width="2" fill="none" marker-end="url(#arrow)" stroke-dasharray="4 3"/>
+      <text x="450" y="0" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#80847A">0. device already linked here via ADE token / Managed Google Play binding, before this flow starts</text>
+
+      <line x1="700" y1="55" x2="532" y2="55" stroke="#92531C" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+      <text x="450" y="375" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="#80847A">This handshake repeats — in spirit — every time the device re-checks compliance, not just at first enrollment.</text>
+    </svg>
+    <div class="cap">Fig. 6 — Authentication flow at enrollment. The vendor trust relationship (top right) is established before the user ever touches the device; what the user experiences is just the Entra ID sign-in and, where required, an MFA challenge.</div>
+  </div>
+</section>
+
+<section class="block" id="contoso">
+  <h2><span class="num">§5</span>Real-world scenario: Contoso Healthcare</h2>
+  <p class="lead">One fictional health system, used consistently. Contoso Healthcare runs a mixed Apple/Android estate across hospitals, clinics, and admin offices — structurally similar to the kind of environment a Workspace Administrator at a real health system manages day to day. Here's how each role actually gets a device, and why that specific method was chosen over the alternatives.</p>
+
+  <div class="scenario-grid">
+    <div class="scenario-card">
+      <span class="role">Clinical · Doctors</span>
+      <h4>Corporate iPhones</h4>
+      <p>Doctors are issued a corporate iPhone for secure messaging, e-prescribing apps, and Teams. Contoso needs full supervision — silently pushing clinical apps, blocking AirDrop of patient photos, enforcing managed-app-only data flow — none of which a BYOD method could deliver.</p>
+      <span class="method-used">ADE — Setup Assistant, modern auth (IOS-01)</span>
+    </div>
+    <div class="scenario-card">
+      <span class="role">Clinical · Nurses</span>
+      <h4>Shared ward iPads</h4>
+      <p>Each ward has a pool of iPads used across a shift by whichever nurse is on duty. Buying one iPad per nurse isn't realistic, and patient data absolutely cannot bleed between users sharing the same physical device.</p>
+      <span class="method-used">Shared iPad (IOS-05)</span>
+    </div>
+    <div class="scenario-card">
+      <span class="role">Operations · Field workers</span>
+      <h4>Community health Android phones</h4>
+      <p>Community nurses visiting patients at home are issued one Android phone they're explicitly allowed to also use personally, rather than carrying two devices. Contoso still needs the ability to fully wipe the device if it's lost in the field.</p>
+      <span class="method-used">Work Profile — COPE (AE-02), via Knox Mobile Enrollment</span>
+    </div>
+    <div class="scenario-card">
+      <span class="role">Facilities · Reception</span>
+      <h4>Check-in kiosks</h4>
+      <p>Front-desk Android tablets run a single patient check-in app, nothing else, all day. There's no individual user, no personal use, and the device needs to survive being touched by hundreds of strangers a day without ever exposing a home screen.</p>
+      <span class="method-used">Dedicated device (AE-04), via QR provisioning</span>
+    </div>
+    <div class="scenario-card">
+      <span class="role">Leadership · Executives</span>
+      <h4>BYOD smartphones</h4>
+      <p>Executives decline corporate-issued hardware and want email and Teams on their own iPhone or Android phone instead, with minimal IT intrusion into a device they also use for their personal life.</p>
+      <span class="method-used">Account-Driven User Enrollment (IOS-04) or Work Profile — BYOD (AE-01)</span>
+    </div>
+    <div class="scenario-card">
+      <span class="role">Telehealth · Consultation rooms</span>
+      <h4>Wall-mounted consultation tablets</h4>
+      <p>A dedicated telehealth room runs a supervised iPad locked to the Teams meeting app for remote consultations, joined anonymously without any individual clinician sign-in needed for the device itself.</p>
+      <span class="method-used">ADE supervised + Single App Mode (built on IOS-01)</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <caption>Table 3 — Contoso Healthcare role-to-method map</caption>
+      <thead><tr><th>Role</th><th>Device</th><th>Platform</th><th>Method chosen</th><th>Why not the alternative</th></tr></thead>
+      <tbody>
+        <tr><td class="hl">Doctor</td><td>Corporate iPhone</td><td>iOS</td><td>ADE, modern auth</td><td>Account-Driven would forfeit supervision-level app/data controls Contoso requires for clinical apps</td></tr>
+        <tr><td class="hl">Nurse</td><td>Shared ward iPad</td><td>iPadOS</td><td>Shared iPad</td><td>A 1:1 ADE profile would mean buying one iPad per nurse instead of sharing a ward pool</td></tr>
+        <tr><td class="hl">Field worker</td><td>Issued Android phone</td><td>Android</td><td>Work Profile COPE</td><td>Fully Managed would block the personal use Contoso has agreed to allow; BYOD work profile wouldn't allow a full wipe if lost</td></tr>
+        <tr><td class="hl">Reception</td><td>Check-in kiosk</td><td>Android</td><td>Dedicated</td><td>COPE or Fully Managed would leave a navigable home screen the public could tamper with</td></tr>
+        <tr><td class="hl">Executive</td><td>Personal phone</td><td>iOS or Android</td><td>Account-Driven / Work Profile BYOD</td><td>Full device enrollment would expose personal data to IT, which executives specifically declined</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="block" id="admin-perspective">
+  <h2><span class="num">§6</span>Administrator perspective</h2>
+  <p class="lead">Stepping back from individual methods — here's what actually shows up in the Intune admin center, organized by the task categories an admin works through, not by platform.</p>
+
+  <h3>Enrollment profiles</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>Under Devices &gt; Android, you create separate enrollment profile types per mode: Corporate-owned fully managed, Corporate-owned work profile (COPE), Corporate-owned dedicated, and personally-owned work profile is mostly governed by enrollment restrictions rather than a profile you build by hand. Each corporate profile generates the QR code or token artifact admins hand off to provisioning.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Under Devices &gt; Enrollment &gt; Apple, ADE profiles are created per Apple Business token and assigned to synced devices or device groups. User Enrollment is configured as an enrollment type (account-driven vs. legacy Company Portal) rather than a device-specific profile.</p></div>
+  </div>
+
+  <h3>Tokens and certificates</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>No certificate to manage directly — the trust relationship is the managed Google Play binding (OAuth-based), set up once when Android Enterprise is first enabled in the tenant. Samsung KME and Google zero-touch each have their own separate portal account, outside Intune, that admins maintain independently.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Two artifacts admins must actively track: the Apple MDM push certificate (renews annually — letting it lapse breaks push notifications to every iOS device in the tenant, not just new enrollments) and the ADE token (.p7m file) from Apple Business, which also has an expiry. Both deserve a calendar reminder well before expiry.</p></div>
+  </div>
+
+  <h3>Compliance policies</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>Compliance policies typically branch by ownership — a stricter device-wide policy for Fully Managed/COPE devices, and a work-profile-scoped policy for BYOD that can only see the container, not the whole phone.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Similarly split — supervised ADE devices can be checked against device-wide signals; Account-Driven User Enrollment devices are evaluated only on the managed Apple Account partition. Shared iPad has its own caveats, noted in its datasheet above.</p></div>
+  </div>
+
+  <h3>Configuration profiles</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>Settings catalog profiles now cover almost everything custom OMA-URI profiles used to handle for personally-owned work profile devices (with the Wi-Fi PSK exception called out earlier in the legacy section). Corporate-owned modes get the fuller restriction set, including device-wide Wi-Fi, Bluetooth, and naming templates.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Configuration profiles ride on Declarative Device Management by default in 2026, meaning the device proactively reports state changes rather than waiting to be polled — admins will notice compliance and configuration status updating faster than on older protocol versions.</p></div>
+  </div>
+
+  <h3>Application deployment</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>All app delivery flows through Managed Google Play — apps are approved into the enterprise catalog there, then assigned (required/available/uninstall) per group in Intune, same as any other app type.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Apps are assigned as required/available via Volume Purchase Program-based licensing through Apple Business. One operational detail worth repeating because it trips up so many admins: for ADE devices, Company Portal itself must be deployed as a required app through Intune — never through the public App Store — or automatic updates and full-fleet coverage silently break.</p></div>
+  </div>
+
+  <h3>Conditional Access integration</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>Compliance status from any of the four modes can gate Conditional Access. BYOD work profile compliance reflects only the container's state — Conditional Access policies relying on device-wide signals (like full-disk encryption of the personal side) won't have visibility into that.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Same principle, with Shared iPad as the standout exception: several Conditional Access condition types (approved client app, app protection policy requirement, per-device terms of use, device-compliance marking, device filters) are explicitly unsupported on Shared iPad — design around that gap rather than discovering it in production.</p></div>
+  </div>
+
+  <h3>Reporting and monitoring</h3>
+  <div class="spec-grid">
+    <div class="spec-field"><span class="spec-label">Android</span><p>Standard Intune device reports cover Fully Managed/COPE/Dedicated cleanly since they're single-user, single-device records. BYOD work profile devices report only the work-container state.</p></div>
+    <div class="spec-field"><span class="spec-label">iOS / iPadOS</span><p>Shared iPad is the notable gap here too — user-assigned policy reporting doesn't surface cleanly on a device that serves many different people, so plan to lean on sign-in/usage logs from Entra ID rather than device-centric Intune reports if you need per-user audit detail on shared hardware.</p></div>
+  </div>
+</section>
+
+<section class="block" id="mistakes">
+  <h2><span class="num">§7</span>Common mistakes &amp; key traps</h2>
+  <p class="lead">A consolidated list pulled from every card above — the things that actually catch people out in practice (and, often, on certification exams covering this material).</p>
+
+  <div class="trap">
+    <div class="trap-icon">1</div>
+    <div class="trap-body"><p><strong>Treating "mode" and "method" as the same kind of thing.</strong> Comparing Zero-touch to COPE is comparing a delivery truck to a destination.</p><p class="fix"><b>Fix:</b> Pick the management mode from ownership + personal-use intent first; pick the provisioning method from procurement reality second.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">2</div>
+    <div class="trap-body"><p><strong>Choosing Fully Managed when COPE was actually wanted</strong> (or vice versa), discovered only after staff complain they can't add a personal account — or after IT can't wipe a "personal" device they assumed was corporate.</p><p class="fix"><b>Fix:</b> Confirm the personal-use answer with the business owner before generating the provisioning artifact, not after.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">3</div>
+    <div class="trap-body"><p><strong>Deploying the iOS Company Portal app via the App Store on ADE devices.</strong> Breaks automatic updates and isn't supported for automated device enrollment.</p><p class="fix"><b>Fix:</b> Always deploy Company Portal as a required app through Intune for ADE-enrolled devices.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">4</div>
+    <div class="trap-body"><p><strong>Letting the Apple MDM push certificate or ADE token expire.</strong> Silently breaks enrollment and push notifications tenant-wide, often discovered only when a fresh device fails to enroll.</p><p class="fix"><b>Fix:</b> Calendar both renewal dates well ahead of expiry — don't rely on remembering.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">5</div>
+    <div class="trap-body"><p><strong>Selecting the legacy "Device Admin (Deprecated)" profile type in the Samsung Knox Admin Portal</strong> out of habit from an old tutorial — it no longer works on Android 11+.</p><p class="fix"><b>Fix:</b> Always select the Android Enterprise profile type in Knox for new enrollments.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">6</div>
+    <div class="trap-body"><p><strong>Defaulting BYOD iOS users to "Device Enrollment with Company Portal" or the deprecated profile-based User Enrollment</strong> instead of Account-Driven User Enrollment.</p><p class="fix"><b>Fix:</b> Account-Driven User Enrollment is Apple's current, more private, recommended BYOD path — make it the default policy.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">7</div>
+    <div class="trap-body"><p><strong>Assuming every Conditional Access condition works unchanged on Shared iPad.</strong> Several condition types are explicitly unsupported.</p><p class="fix"><b>Fix:</b> Review the Shared iPad Conditional Access limitations before, not after, designing access policy for ward tablets.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">8</div>
+    <div class="trap-body"><p><strong>Forgetting custom OMA-URI profiles for personally-owned Android work profile devices stopped accepting new policies in April 2025.</strong></p><p class="fix"><b>Fix:</b> Migrate to settings catalog equivalents; the one carve-out is Wi-Fi PSK, supported through standard Wi-Fi configuration profiles since Q1 2025.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">9</div>
+    <div class="trap-body"><p><strong>Assuming a six-tap QR provisioning gesture will work on a device that isn't truly factory-reset.</strong> It silently fails on a device that's already completed Setup Wizard once.</p><p class="fix"><b>Fix:</b> Confirm a genuine factory reset before attempting QR or NFC provisioning.</p></div>
+  </div>
+  <div class="trap">
+    <div class="trap-icon">10</div>
+    <div class="trap-body"><p><strong>Leaving devices assigned in Apple Business, the zero-touch portal, or the Knox Admin Portal after retirement or resale.</strong> The next owner (or the next internal team) inherits a device that auto-enrolls into the wrong tenant.</p><p class="fix"><b>Fix:</b> Unassign/release devices from every vendor portal as a mandatory step in the retirement stage of the device lifecycle (Fig. 5, stage 5).</p></div>
+  </div>
+</section>
+
+<section class="block" id="glossary-table">
+  <h2><span class="num">§8</span>Quick-reference glossary table</h2>
+  <div class="table-wrap">
+    <table>
+      <caption>Every enrollment item in this guide, one line each</caption>
+      <thead><tr><th>ID</th><th>Name</th><th>Type</th><th>Status</th><th>One-liner</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">AE-01</td><td>Work Profile — BYOD</td><td>Mode</td><td><span class="pill pill-current">Current</span></td><td>Walled container on a personal Android phone</td></tr>
+        <tr><td class="mono">AE-02</td><td>Work Profile — Corporate (COPE)</td><td>Mode</td><td><span class="pill pill-current">Current</span></td><td>Org-owned phone, full control, personal use allowed</td></tr>
+        <tr><td class="mono">AE-03</td><td>Fully Managed</td><td>Mode</td><td><span class="pill pill-current">Current</span></td><td>Org-owned, no personal use, full control</td></tr>
+        <tr><td class="mono">AE-04</td><td>Dedicated (kiosk)</td><td>Mode</td><td><span class="pill pill-current">Current</span></td><td>Single-app locked-down org device</td></tr>
+        <tr><td class="mono">AE-P1</td><td>Zero-touch</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Reseller-fed, fully hands-off provisioning</td></tr>
+        <tr><td class="mono">AE-P2</td><td>Knox Mobile Enrollment</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Samsung's hands-off provisioning, via Knox Admin Portal</td></tr>
+        <tr><td class="mono">AE-P3</td><td>QR code</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Six-tap + scan provisioning, any retail device</td></tr>
+        <tr><td class="mono">AE-P4</td><td>Token / afw#setup</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Type a token instead of scanning a code</td></tr>
+        <tr><td class="mono">AE-P5</td><td>NFC tag</td><td>Method</td><td><span class="pill pill-current">Current, niche</span></td><td>Tap a programmed tag to provision</td></tr>
+        <tr><td class="mono">AE-P6</td><td>Company Portal token (BYOD)</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>The only path into Work Profile BYOD</td></tr>
+        <tr><td class="mono">—</td><td>Android Device Administrator</td><td>Mode (old API)</td><td><span class="pill pill-deprecated">Deprecated</span></td><td>Retired for GMS devices; pre-Android-Enterprise model</td></tr>
+        <tr><td class="mono">—</td><td>NFC Beam / Bump</td><td>Method (old)</td><td><span class="pill pill-deprecated">Deprecated</span></td><td>Phone-to-phone bump, gone since Android 10</td></tr>
+        <tr><td class="mono">—</td><td>COSU terminology</td><td>Naming (old)</td><td><span class="pill pill-legacy">Renamed</span></td><td>Old name for what's now "Dedicated device"</td></tr>
+        <tr><td class="mono">IOS-01</td><td>ADE — Setup Assistant, modern auth</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Zero-touch, supervised, corporate iOS enrollment</td></tr>
+        <tr><td class="mono">IOS-02</td><td>ADE via Apple Configurator</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Manual ADE assignment for non-channel devices</td></tr>
+        <tr><td class="mono">IOS-03</td><td>Device Enrollment with Company Portal</td><td>Method</td><td><span class="pill pill-current">Narrow role</span></td><td>Full MDM, unsupervised, no ADE</td></tr>
+        <tr><td class="mono">IOS-04</td><td>Account-Driven User Enrollment</td><td>Method</td><td><span class="pill pill-current">Current, recommended</span></td><td>Apple's current privacy-respecting BYOD path</td></tr>
+        <tr><td class="mono">IOS-05</td><td>Shared iPad</td><td>Method</td><td><span class="pill pill-current">Current</span></td><td>Multi-user supervised iPad via ADE, no user affinity</td></tr>
+        <tr><td class="mono">—</td><td>Apple School Manager</td><td>Portal</td><td><span class="pill pill-current">Current</span></td><td>Education sibling of Apple Business; same ADE mechanics</td></tr>
+        <tr><td class="mono">—</td><td>Apple User Enrollment w/ Company Portal (profile-based)</td><td>Method (old)</td><td><span class="pill pill-deprecated">Deprecated</span></td><td>Unavailable for new enrollments since early 2026</td></tr>
+        <tr><td class="mono">—</td><td>Setup Assistant (Legacy)</td><td>Auth option (old)</td><td><span class="pill pill-legacy">Legacy</span></td><td>Still selectable, no longer recommended for ADE</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="block" id="sources">
+  <h2><span class="num">§9</span>Sources &amp; currency</h2>
+  <p class="lead">What changed recently, cross-referenced against Microsoft, Google, Samsung, and Apple's own documentation as of June 2026 — and where to check again in six months, because this space doesn't sit still.</p>
+
+  <div class="callout warn">
+    <span class="callout-label">Recent changes baked into this guide</span>
+    <ul>
+      <li>Apple Business Manager, Apple Business Essentials, and Apple Business Connect were retired and consolidated into <strong>Apple Business</strong> on April 14, 2026.</li>
+      <li>Android Device Administrator management is fully deprecated for devices with Google Mobile Services, following Microsoft's end of support at the close of 2024.</li>
+      <li>Apple User Enrollment with Company Portal (the profile-based variant) is deprecated and unavailable for new enrollments as of Intune's April 2026 documentation; Account-Driven User Enrollment is the current recommendation.</li>
+      <li>Custom OMA-URI configuration profiles for personally-owned Android work profile devices stopped accepting new policies in April 2025.</li>
+      <li>Declarative Device Management is now Apple's default management protocol across current iOS, iPadOS, and macOS releases.</li>
+      <li>A 2025-reported COPE enrollment issue affects some Samsung Android 16 devices, with Knox Mobile Enrollment documented as the working fallback.</li>
+    </ul>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-label">Where to re-check this periodically</span>
+    <ul>
+      <li><strong>Microsoft Learn</strong> — the Intune "What's new" page, plus the dedicated Android and Apple device-enrollment guide articles.</li>
+      <li><strong>Google for Developers</strong> — the Android Enterprise terminology and "What's new for Android in the enterprise" pages, where deprecations are tracked explicitly.</li>
+      <li><strong>Samsung Knox documentation</strong> — Knox Mobile Enrollment release notes, published roughly monthly.</li>
+      <li><strong>Apple Platform Deployment guide</strong> and Apple Business support documentation — especially anything referencing the post-rename Apple Business feature set, since some functionality is still being folded in through 2026.</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="guide-footer">
+  <p>Built as a single reference document covering Android and iOS/iPadOS enrollment in Microsoft Intune, current as of June 2026. Enrollment mechanics, deprecations, and rebrands in this space move quickly — treat the status badges throughout as a snapshot, and re-verify anything load-bearing against the sources above before a production rollout.</p>
+</footer>
+
+</main>
+</div>
+</body>
+</html>

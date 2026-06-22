@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overseas Work Approval — Automation Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16202b;
+    --ink-soft:#33424f;
+    --paper:#fbfcfd;
+    --panel:#ffffff;
+    --slate:#5a6b7b;
+    --hair:#dce3e9;
+    --hair-2:#eaeff3;
+    --accent:#0b6e78;        /* clinical teal — primary */
+    --accent-deep:#084e56;
+    --good:#2e7d5b;          /* automated / resolved */
+    --good-bg:#e8f3ed;
+    --warn:#b9722a;          /* manual / risk */
+    --warn-bg:#f7efe5;
+    --stop:#b1473f;          /* failure / gap */
+    --stop-bg:#f6e9e8;
+    --tier1:#0b6e78;
+    --tier2:#2e7d5b;
+    --tier3:#5a4b9c;
+    --radius:4px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:880px;margin:0 auto;padding:0 28px 120px;}
+
+  /* ---------- masthead ---------- */
+  header.mast{
+    border-bottom:2px solid var(--ink);
+    padding:54px 0 26px;
+    margin-bottom:8px;
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);font-weight:500;margin:0 0 18px;
+  }
+  h1{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:600;font-size:clamp(30px,5vw,46px);
+    line-height:1.05;letter-spacing:-.02em;margin:0 0 14px;
+  }
+  .standfirst{
+    font-size:18px;color:var(--ink-soft);max-width:62ch;margin:0;
+  }
+  .meta{
+    display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:24px;
+    font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--slate);
+  }
+  .meta b{color:var(--ink);font-weight:500;}
+
+  /* ---------- contents ---------- */
+  nav.toc{
+    margin:30px 0 12px;padding:20px 22px;
+    border:1px solid var(--hair);border-radius:var(--radius);
+    background:linear-gradient(180deg,#ffffff,#f7fafb);
+  }
+  nav.toc p{margin:0 0 12px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);}
+  nav.toc ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 28px;counter-reset:toc;}
+  nav.toc a{
+    display:flex;gap:12px;align-items:baseline;text-decoration:none;color:var(--ink-soft);
+    font-size:14.5px;padding:3px 0;border-bottom:1px solid transparent;
+  }
+  nav.toc a:hover{color:var(--accent);border-bottom-color:var(--hair);}
+  nav.toc a::before{
+    counter-increment:toc;content:counter(toc,decimal-leading-zero);
+    font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent);
+  }
+  @media(max-width:640px){nav.toc ol{grid-template-columns:1fr;}}
+
+  /* ---------- sections ---------- */
+  section{padding-top:46px;}
+  .sec-head{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--hair);padding-bottom:10px;margin-bottom:22px;}
+  .sec-num{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--accent);font-weight:500;padding-top:6px;}
+  h2{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:25px;letter-spacing:-.015em;margin:0;line-height:1.15;}
+  h3{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:18px;letter-spacing:-.01em;margin:30px 0 8px;}
+  h4{font-family:"IBM Plex Sans";font-weight:600;font-size:15px;margin:20px 0 6px;color:var(--ink);}
+  p{margin:0 0 14px;}
+  a{color:var(--accent-deep);}
+  strong{font-weight:600;}
+  ul,ol{margin:0 0 16px;padding-left:22px;}
+  li{margin-bottom:7px;}
+  .lede{font-size:17px;color:var(--ink-soft);}
+
+  /* ---------- recommendation banner ---------- */
+  .verdict{
+    margin:26px 0 6px;border:1px solid var(--accent);border-radius:var(--radius);
+    overflow:hidden;box-shadow:0 1px 0 rgba(11,110,120,.06);
+  }
+  .verdict .top{background:var(--accent);color:#fff;padding:9px 20px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;}
+  .verdict .body{padding:20px 22px;background:#f4fafb;}
+  .verdict .body p:last-child{margin-bottom:0;}
+  .verdict h3{margin:0 0 10px;color:var(--accent-deep);}
+
+  /* ---------- callouts ---------- */
+  .note{border-left:3px solid var(--slate);background:#f4f7f9;padding:14px 18px;border-radius:0 var(--radius) var(--radius) 0;margin:18px 0;font-size:15px;}
+  .note.key{border-left-color:var(--good);background:var(--good-bg);}
+  .note.risk{border-left-color:var(--warn);background:var(--warn-bg);}
+  .note .tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--slate);}
+  .note.key .tag{color:var(--good);}
+  .note.risk .tag{color:var(--warn);}
+
+  /* ---------- tables ---------- */
+  .tbl-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--hair);border-radius:var(--radius);}
+  table{border-collapse:collapse;width:100%;font-size:14px;min-width:520px;}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--hair-2);vertical-align:top;}
+  thead th{background:#f1f5f7;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);font-weight:500;border-bottom:1px solid var(--hair);}
+  tbody tr:last-child td{border-bottom:none;}
+  td b{font-weight:600;}
+  .pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.04em;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+  .pill.zero{background:var(--good-bg);color:var(--good);}
+  .pill.low{background:#eaf4f5;color:var(--accent-deep);}
+  .pill.add{background:var(--warn-bg);color:var(--warn);}
+
+  /* ---------- current-state flow ---------- */
+  .steps{counter-reset:st;margin:14px 0 0;padding:0;list-style:none;}
+  .steps li{position:relative;padding:0 0 14px 40px;margin:0;border-left:1.5px dashed var(--hair);margin-left:13px;}
+  .steps li:last-child{border-left-color:transparent;}
+  .steps li::before{counter-increment:st;content:counter(st);position:absolute;left:-13px;top:-2px;width:26px;height:26px;border-radius:50%;background:#fff;border:1.5px solid var(--slate);color:var(--slate);font-family:"IBM Plex Mono",monospace;font-size:12px;display:flex;align-items:center;justify-content:center;}
+  .steps li.manual::before{border-color:var(--warn);color:var(--warn);}
+  .steps li b{font-weight:600;}
+  .steps small{color:var(--slate);}
+
+  /* ---------- option cards ---------- */
+  .opt{border:1px solid var(--hair);border-radius:var(--radius);margin:22px 0;overflow:hidden;}
+  .opt-head{padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--hair);}
+  .opt-1 .opt-head{background:#eef6f7;}
+  .opt-2 .opt-head{background:var(--good-bg);}
+  .opt-3 .opt-head{background:#eeeaf6;}
+  .badge{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:3px;color:#fff;white-space:nowrap;}
+  .opt-1 .badge{background:var(--tier1);}
+  .opt-2 .badge{background:var(--tier2);}
+  .opt-3 .badge{background:var(--tier3);}
+  .opt-head h3{margin:0;font-size:18px;}
+  .opt-head .effort{margin-left:auto;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--slate);text-align:right;}
+  .opt-body{padding:18px 20px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 26px;}
+  @media(max-width:600px){.grid2{grid-template-columns:1fr;}}
+  .proscons h4{display:flex;align-items:center;gap:7px;margin-top:6px;}
+  .proscons ul{list-style:none;padding:0;}
+  .proscons li{padding-left:20px;position:relative;font-size:14px;}
+  .pro li::before{content:"+";position:absolute;left:2px;color:var(--good);font-weight:700;}
+  .con li::before{content:"–";position:absolute;left:4px;color:var(--warn);font-weight:700;}
+  .opt-foot{border-top:1px solid var(--hair-2);margin-top:8px;padding-top:14px;font-size:13.5px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px 26px;}
+  @media(max-width:600px){.opt-foot{grid-template-columns:1fr;}}
+  .opt-foot div b{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--slate);display:block;font-weight:500;margin-bottom:1px;}
+
+  /* ---------- architecture diagram ---------- */
+  .figure{margin:22px 0;border:1px solid var(--hair);border-radius:var(--radius);background:#fff;padding:6px;}
+  .figure svg{display:block;width:100%;height:auto;}
+  figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--slate);padding:8px 12px 4px;}
+
+  /* ---------- code ---------- */
+  pre{background:#0f1922;color:#d7e1e8;border-radius:var(--radius);padding:16px 18px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:13px;line-height:1.55;margin:14px 0;}
+  pre .k{color:#7fd4dc;}
+  pre .s{color:#c4d99a;}
+  pre .c{color:#6c7e89;font-style:italic;}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:#eef2f4;padding:1px 5px;border-radius:3px;}
+  pre code{background:none;padding:0;}
+
+  footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--hair);font-size:13px;color:var(--slate);}
+  a.up{font-family:"IBM Plex Mono",monospace;font-size:12px;text-decoration:none;color:var(--accent);}
+
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow">Solution architecture · Identity governance automation</p>
+    <h1>Automating the overseas&#8209;work access approval process</h1>
+    <p class="standfirst">From a four-signature scanned form and manual PIM activation to a governed, self-expiring, mostly hands-off workflow on the Microsoft stack you already run.</p>
+    <div class="meta">
+      <span><b>Context</b> &nbsp;HNZ primary tenant · Device Management group via PIM</span>
+      <span><b>Scope</b> &nbsp;Intake → approvals → provisioning → expiry</span>
+      <span><b>Stack</b> &nbsp;M365 · Power Platform · Entra ID Governance · Graph</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p>On this page</p>
+    <ol>
+      <li><a href="#verdict">The recommendation</a></li>
+      <li><a href="#current">Current process &amp; where it leaks</a></li>
+      <li><a href="#insight">The insight that changes everything</a></li>
+      <li><a href="#target">Target end-to-end architecture</a></li>
+      <li><a href="#options">Three solution tiers</a></li>
+      <li><a href="#servicenow">Should ServiceNow stay?</a></li>
+      <li><a href="#security">Security &amp; governance</a></li>
+      <li><a href="#cost">Licensing &amp; cost</a></li>
+      <li><a href="#ops">Operations: errors, logging, scale</a></li>
+      <li><a href="#appendix">Technical appendix</a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ VERDICT ============ -->
+  <section id="verdict">
+    <div class="verdict">
+      <div class="top">Bottom line first</div>
+      <div class="body">
+        <h3>Build Tier 2: Forms → Power Automate Approvals → Graph (PIM for Groups)</h3>
+        <p>Keep the request, the four approvals, validation, reminders and notifications entirely on <strong>standard connectors you already own</strong> (Forms, Approvals, SharePoint, Teams, Outlook). Add <strong>one</strong> premium component — a single call to Microsoft Graph — that writes the user into the overseas group as an <strong>active, time-bound</strong> PIM assignment.</p>
+        <p>That one call carries the approved start and end dates, so the platform <strong>removes access automatically when the period ends</strong>. The single biggest risk in your current process — forgetting to revoke access — stops being a task at all.</p>
+        <p style="margin-top:14px;font-size:14.5px;color:var(--ink-soft)">If HNZ holds (or will buy) <strong>Entra ID Governance</strong> licences, also evaluate <strong>Entitlement Management access packages</strong> as a near-zero-code alternative (Tier 3) — it does request, multi-stage approval, time-boxing and recertification out of the box.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CURRENT ============ -->
+  <section id="current">
+    <div class="sec-head"><span class="sec-num">02</span><h2>The current process, and exactly where it leaks</h2></div>
+    <p class="lede">The process splits cleanly into two halves: a <strong>cross-functional approval phase</strong> you don't control, and a <strong>technical provisioning phase</strong> your team runs by hand. Both halves leak, but for different reasons.</p>
+
+    <h3>Where time and trust are lost</h3>
+    <ol class="steps">
+      <li class="manual"><b>Paper-then-scan intake.</b> <small>A physical form is signed by four parties and scanned. Nothing is validated until it reaches you — so incomplete or wrongly-dated requests are only caught at the end.</small></li>
+      <li class="manual"><b>Approvals collected off-system.</b> <small>Manager, HR and Protective Services sign sequentially with no tracking, no reminders, no escalation. This is where most of the elapsed time disappears.</small></li>
+      <li class="manual"><b>Queue with no signal.</b> <small>Requests land in ServiceNow but your team isn't pinged, so they sit. This is a notification gap, not a ServiceNow limitation.</small></li>
+      <li class="manual"><b>Manual verification.</b> <small>Re-reading the scan to confirm all four signatures, mandatory fields and date logic — repeated for every request.</small></li>
+      <li class="manual"><b>Privilege elevation by hand.</b> <small>Sign in → activate the Device Management role via PIM → find the overseas group.</small></li>
+      <li class="manual"><b>Manual PIM assignment.</b> <small>Add the user, switch eligible→active, type in start and end dates, save, double-check.</small></li>
+      <li class="manual"><b>Expiry depends on memory.</b> <small>If dates are mistyped or the assignment is set without an end, access lingers — the highest-impact failure mode.</small></li>
+    </ol>
+
+    <div class="note risk">
+      <span class="tag">Root causes, not symptoms</span>
+      The pain isn't "too many steps" — it's that <strong>validation happens last</strong>, <strong>approvals are untracked</strong>, and <strong>revocation is a human action</strong>. A good design moves validation to the front, makes approvals first-class and auditable, and makes revocation automatic. Most of your listed challenges collapse once those three things are true.
+    </div>
+  </section>
+
+  <!-- ============ INSIGHT ============ -->
+  <section id="insight">
+    <div class="sec-head"><span class="sec-num">03</span><h2>The insight that changes the whole design</h2></div>
+    <p class="lede">You're already using <strong>PIM for Groups</strong> for this group. PIM can create an <strong>active assignment that is time-bound</strong> — with a start time and an explicit end time — and it will <strong>deprovision the membership itself</strong> when that end time passes.</p>
+    <p>That capability is reachable from a single Microsoft Graph call. So the automation doesn't need a separate "scheduled clean-up job" to strip access later, and it doesn't need anyone to remember anything. It makes <em>one</em> correct request at approval time, and PIM owns the rest of the lifecycle.</p>
+    <div class="note key">
+      <span class="tag">Why this matters</span>
+      "Failure to remove access when the period expires" — your most serious risk — is solved <strong>natively by the platform</strong>, not by code you have to maintain. Every other tier in this document inherits this property for free.
+    </div>
+    <p>One caveat worth recording: if the tenant's Entra ID P2 / Governance licensing ever lapses, existing <em>time-bound</em> assignments convert to <em>permanent</em> (they stop expiring). Treat the P2/Governance entitlement as a hard dependency of the control, not just a nice-to-have.</p>
+  </section>
+
+  <!-- ============ TARGET ============ -->
+  <section id="target">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Target end-to-end architecture</h2></div>
+    <p class="lede">A single orchestration with one front door, sequential approvals with timeouts, validation gates on both sides of the approvals, a privileged provisioning step isolated behind app-only auth, and an audit ledger.</p>
+
+    <figure class="figure">
+      <svg viewBox="0 0 860 470" role="img" aria-label="End to end architecture diagram from form intake through approvals, validation, Graph provisioning and audit.">
+        <defs>
+          <marker id="arr" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="#5a6b7b"/>
+          </marker>
+          <marker id="arrG" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+            <path d="M0,0 L9,4.5 L0,9 Z" fill="#0b6e78"/>
+          </marker>
+          <style>
+            .box{fill:#fff;stroke:#cdd7de;stroke-width:1.2;}
+            .lbl{font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;fill:#16202b;}
+            .sub{font-family:'IBM Plex Mono',monospace;font-size:9.5px;fill:#5a6b7b;}
+            .band{font-family:'IBM Plex Mono',monospace;font-size:10px;fill:#5a6b7b;letter-spacing:.08em;}
+            .std{fill:#eef6f7;stroke:#0b6e78;}
+            .prem{fill:#eeeaf6;stroke:#5a4b9c;}
+            .gov{fill:#e8f3ed;stroke:#2e7d5b;}
+            .flow{stroke:#5a6b7b;stroke-width:1.4;fill:none;}
+            .flowG{stroke:#0b6e78;stroke-width:1.6;fill:none;}
+          </style>
+        </defs>
+
+        <!-- band labels -->
+        <text x="14" y="26" class="band">INTAKE · STANDARD</text>
+        <text x="14" y="150" class="band">ORCHESTRATION · POWER AUTOMATE</text>
+        <text x="14" y="330" class="band">PRIVILEGED PROVISIONING · APP-ONLY</text>
+
+        <!-- intake -->
+        <rect class="box std" x="14" y="36" width="150" height="58" rx="4"/>
+        <text class="lbl" x="28" y="60">Microsoft Forms</text>
+        <text class="sub" x="28" y="78">request + justification</text>
+
+        <!-- flow trigger -->
+        <rect class="box" x="14" y="160" width="150" height="56" rx="4"/>
+        <text class="lbl" x="28" y="183">Flow trigger</text>
+        <text class="sub" x="28" y="200">on submit</text>
+
+        <!-- validate 1 -->
+        <rect class="box" x="190" y="160" width="150" height="56" rx="4"/>
+        <text class="lbl" x="204" y="183">Validate fields</text>
+        <text class="sub" x="204" y="200">dates · duration · policy</text>
+
+        <!-- approvals -->
+        <rect class="box" x="366" y="150" width="170" height="76" rx="4"/>
+        <text class="lbl" x="380" y="172">Approvals</text>
+        <text class="sub" x="380" y="189">Manager → HR →</text>
+        <text class="sub" x="380" y="202">Protective Services</text>
+        <text class="sub" x="380" y="217" fill="#b9722a">timeout · reminder · escalate</text>
+
+        <!-- validate 2 / decision -->
+        <rect class="box" x="562" y="160" width="150" height="56" rx="4"/>
+        <text class="lbl" x="576" y="183">All approved?</text>
+        <text class="sub" x="576" y="200">re-validate · branch</text>
+
+        <!-- audit list -->
+        <rect class="box gov" x="366" y="36" width="170" height="58" rx="4"/>
+        <text class="lbl" x="380" y="60">SharePoint / Dataverse</text>
+        <text class="sub" x="380" y="78">state + audit ledger</text>
+
+        <!-- servicenow -->
+        <rect class="box prem" x="562" y="36" width="150" height="58" rx="4"/>
+        <text class="lbl" x="576" y="60">ServiceNow</text>
+        <text class="sub" x="576" y="78">ITSM record (optional)</text>
+
+        <!-- key vault / app reg -->
+        <rect class="box prem" x="366" y="340" width="170" height="58" rx="4"/>
+        <text class="lbl" x="380" y="363">Entra app + Key Vault</text>
+        <text class="sub" x="380" y="381">app-only token</text>
+
+        <!-- graph -->
+        <rect class="box gov" x="562" y="330" width="284" height="78" rx="4"/>
+        <text class="lbl" x="576" y="354">Microsoft Graph — PIM for Groups</text>
+        <text class="sub" x="576" y="372">POST assignmentScheduleRequests</text>
+        <text class="sub" x="576" y="388" fill="#2e7d5b">active · start + end · auto-expires</text>
+
+        <!-- notify -->
+        <rect class="box std" x="738" y="160" width="108" height="56" rx="4"/>
+        <text class="lbl" x="752" y="183">Notify</text>
+        <text class="sub" x="752" y="200">Teams · mail</text>
+
+        <!-- flows -->
+        <path class="flow" d="M89,94 L89,160" marker-end="url(#arr)"/>
+        <path class="flow" d="M164,188 L190,188" marker-end="url(#arr)"/>
+        <path class="flow" d="M340,188 L366,188" marker-end="url(#arr)"/>
+        <path class="flow" d="M536,188 L562,188" marker-end="url(#arr)"/>
+        <path class="flow" d="M712,180 L738,180" marker-end="url(#arr)"/>
+        <!-- approvals to audit -->
+        <path class="flow" d="M451,150 L451,94" marker-end="url(#arr)"/>
+        <!-- decision down to provisioning -->
+        <path class="flowG" d="M637,216 L637,300 L508,300 L508,340" marker-end="url(#arrG)"/>
+        <!-- app to graph -->
+        <path class="flowG" d="M536,369 L562,369" marker-end="url(#arrG)"/>
+        <!-- graph to audit (writeback) -->
+        <path class="flow" d="M820,330 L820,65 L712,65" marker-end="url(#arr)" stroke-dasharray="4 3"/>
+      </svg>
+      <figcaption>Teal path = the one privileged, premium-licensed leg. Everything else runs on connectors already in your M365 entitlement.</figcaption>
+    </figure>
+
+    <h3>How each requirement is met</h3>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Your requirement</th><th>How the target meets it</th></tr></thead>
+      <tbody>
+        <tr><td><b>Validate required fields</b></td><td>Flow validates on submit and again before provisioning; bad requests are returned to the employee, never reaching your team.</td></tr>
+        <tr><td><b>Approval routing</b></td><td>Sequential <b>Approvals</b> actions: Manager → HR → Protective Services, each actionable in Teams, Outlook or the Approvals app.</td></tr>
+        <tr><td><b>Reminders &amp; escalation</b></td><td>Per-stage timeout; on timeout the flow re-sends, then escalates/reassigns to a delegate or manager's manager.</td></tr>
+        <tr><td><b>Group membership assignment</b></td><td>One Graph call writes an <b>active</b> PIM-for-Groups assignment — no interactive elevation by your team.</td></tr>
+        <tr><td><b>Automatic removal at expiry</b></td><td>The assignment carries an <b>end date</b>; PIM deprovisions it automatically. No clean-up job.</td></tr>
+        <tr><td><b>Stakeholder notifications</b></td><td>Teams/Outlook messages at submit, each decision, completion and pre-expiry.</td></tr>
+        <tr><td><b>Audit trail</b></td><td>Approvals history + Entra audit logs + a state row stamped with the ticket number tie the whole chain together.</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ============ OPTIONS ============ -->
+  <section id="options">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Three solution tiers</h2></div>
+    <p class="lede">Same backbone, increasing automation and governance. Each tier is a viable stopping point — Tier 1 alone removes most of the daily pain.</p>
+
+    <!-- TIER 1 -->
+    <div class="opt opt-1">
+      <div class="opt-head">
+        <span class="badge">Tier 1</span>
+        <h3>Quick win — automate intake &amp; approvals, keep provisioning manual</h3>
+        <span class="effort">Effort: days<br>Cost: $0 extra</span>
+      </div>
+      <div class="opt-body">
+        <p>Forms + Power Automate <strong>Approvals</strong> + a SharePoint list + Teams/Outlook notifications. The flow validates fields, routes the four approvals, chases and escalates, then hands your team a <strong>single fully-approved, pre-validated record</strong> (and pings them). Your team still does the PIM assignment — but now it's a one-minute, zero-ambiguity step.</p>
+        <div class="grid2 proscons">
+          <div class="pro"><h4>Pros</h4><ul>
+            <li>Buildable in days; nothing new to buy</li>
+            <li>Kills the visibility, chasing and missing-info problems immediately</li>
+            <li>All standard connectors — no premium licence, no app registration</li>
+            <li>Low risk; easy to get governance sign-off</li>
+          </ul></div>
+          <div class="con"><h4>Cons</h4><ul>
+            <li>Provisioning &amp; PIM elevation still manual</li>
+            <li>Residual human-error risk at the assignment step</li>
+            <li>Doesn't yet exploit native auto-expiry</li>
+          </ul></div>
+        </div>
+        <div class="opt-foot">
+          <div><b>Complexity</b>Low</div>
+          <div><b>Licensing</b>Existing M365 (E3/E5) only</div>
+          <div><b>Security</b>No new privileged identity; team still elevates via PIM as today</div>
+          <div><b>Maintenance</b>Minimal — one flow, one list</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 2 -->
+    <div class="opt opt-2">
+      <div class="opt-head">
+        <span class="badge">Tier 2 · recommended</span>
+        <h3>Automated provisioning via Graph + PIM for Groups</h3>
+        <span class="effort">Effort: 1–2 wks<br>Cost: low</span>
+      </div>
+      <div class="opt-body">
+        <p>Tier 1 plus the Graph call. On full approval the flow posts an <strong>active, time-bound</strong> assignment to the overseas group using <strong>app-only auth</strong> (dedicated Entra app, secret in Key Vault, least-privilege Graph permission). PIM handles start activation and end-date removal. Stamp the ServiceNow/record number into the request for traceability.</p>
+        <div class="grid2 proscons">
+          <div class="pro"><h4>Pros</h4><ul>
+            <li>Near-full automation; your team approves exceptions only</li>
+            <li>Native auto-expiry — the revocation risk disappears</li>
+            <li>No standing human privilege; the elevation step is gone</li>
+            <li>Strong, queryable audit via Entra logs</li>
+          </ul></div>
+          <div class="con"><h4>Cons</h4><ul>
+            <li>One premium component (the HTTP/Graph call) needs licensing</li>
+            <li>An app registration holds a privileged Graph permission — needs review &amp; secret hygiene</li>
+            <li>Slightly more to build &amp; test (auth, throttling, error paths)</li>
+          </ul></div>
+        </div>
+        <div class="opt-foot">
+          <div><b>Complexity</b>Medium</div>
+          <div><b>Licensing</b>M365 + one premium path (see §08); P2/Governance for assigned users (already in place)</div>
+          <div><b>Security</b>App-only SP, Key Vault secret, least-privilege scope, conditional-access exclusions managed</div>
+          <div><b>Maintenance</b>Secret/cert rotation; monitor Graph version &amp; throttling</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIER 3 -->
+    <div class="opt opt-3">
+      <div class="opt-head">
+        <span class="badge">Tier 3</span>
+        <h3>Enterprise — buy-not-build with Entitlement Management, or full custom platform</h3>
+        <span class="effort">Effort: weeks<br>Cost: higher</span>
+      </div>
+      <div class="opt-body">
+        <p>Two flavours, depending on appetite:</p>
+        <p><strong>3a — Entitlement Management access packages (least code).</strong> An access package fronts the request, runs <strong>multi-stage approval</strong>, grants <strong>time-bound</strong> membership of the overseas group, auto-expires, and supports <strong>access reviews</strong> for recertification — mostly configuration, not code. Trade-off: the approver model is more prescriptive (manager / nominated approvers / sponsors), and it needs <strong>Entra ID Governance</strong> licences.</p>
+        <p><strong>3b — Full custom platform.</strong> Dataverse as system of record, provisioning moved to a <strong>Logic App (Standard) or Azure Function</strong> with managed identity, Application Insights / Log Analytics telemetry, a Power BI dashboard, dead-letter handling and retry policies, plus Access Reviews and optionally Lifecycle Workflows.</p>
+        <div class="grid2 proscons">
+          <div class="pro"><h4>Pros</h4><ul>
+            <li>3a: most governance for the least custom code</li>
+            <li>Recertification, separation of duties, rich reporting</li>
+            <li>Scales to other time-bound access scenarios</li>
+            <li>3b: full observability and control of the provisioning path</li>
+          </ul></div>
+          <div class="con"><h4>Cons</h4><ul>
+            <li>Highest licensing (Governance and/or Dataverse)</li>
+            <li>3a: approval routing less flexible than custom Approvals</li>
+            <li>3b: most components to build, secure and operate</li>
+          </ul></div>
+        </div>
+        <div class="opt-foot">
+          <div><b>Complexity</b>High</div>
+          <div><b>Licensing</b>Entra ID Governance; Dataverse / Logic Apps / Azure as used</div>
+          <div><b>Security</b>Managed identity (no secrets), access reviews, full audit, SoD</div>
+          <div><b>Maintenance</b>More surface area; offset in 3a by Microsoft-managed lifecycle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <span class="tag">How to choose</span>
+      Ship <strong>Tier 1 first</strong> regardless — it's the fastest relief and de-risks everything downstream. Promote to <strong>Tier 2</strong> once the app registration and licensing are signed off; that's the recommended steady state. Reach for <strong>Tier 3a</strong> if HNZ already invests in Entra ID Governance and prefers configuration over custom flows.
+    </div>
+  </section>
+
+  <!-- ============ SERVICENOW ============ -->
+  <section id="servicenow">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Should ServiceNow stay in the loop?</h2></div>
+    <p class="lede">Yes — but as an <strong>audit/ITSM ledger</strong>, not as the orchestrator or the place work waits. Today ServiceNow is where requests <em>stall</em>; in the target it's where the completed transaction is <em>recorded</em>.</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Role for ServiceNow</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td><b>Orchestrator</b> (drives approvals/provisioning)</td><td>Remove — Power Automation does this better and is where your team already lives.</td></tr>
+        <tr><td><b>Intake</b> (the request front door)</td><td>Optional — fine if you prefer staff to raise it as a catalog item; otherwise Forms is lighter.</td></tr>
+        <tr><td><b>Audit / ITSM record</b></td><td><b>Keep.</b> The flow creates/updates a record so existing ITSM reporting and retention still apply. Stamp the record number into the PIM request's <code>ticketInfo</code> to link both worlds.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The ServiceNow connector is premium, so if you keep the writeback it sits in the same licensing bucket as the Graph call (§08) — no separate cost once you've licensed one premium path.</p>
+  </section>
+
+  <!-- ============ SECURITY ============ -->
+  <section id="security">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Security &amp; governance</h2></div>
+
+    <h3>Validating approvals you can trust</h3>
+    <p>Replace ink signatures with <strong>identity-bound</strong> decisions. The Approvals action records <em>who</em> approved, <em>when</em>, and from an authenticated session — far stronger evidence than a scanned signature. Enforce that each stage is actioned by the right principal (e.g. resolve the manager from Entra rather than free-text), and require the approver set to match policy before provisioning proceeds.</p>
+
+    <h3>Least privilege</h3>
+    <ul>
+      <li><strong>No standing human admin for this task.</strong> The interactive PIM elevation your team does today is replaced by an app-only service principal scoped to exactly one capability.</li>
+      <li><strong>Minimal Graph permission.</strong> Grant only what writes a PIM-for-Groups assignment (<code>PrivilegedAccess.ReadWrite.AzureADGroup</code>) — confirm the exact least-privilege scope against current Graph docs at build time rather than over-granting directory roles.</li>
+      <li><strong>Secret hygiene.</strong> Client secret/cert in <strong>Key Vault</strong>; prefer a <strong>managed identity</strong> if you host the call in a Logic App or Function (Tier 3b) so there's no secret at all.</li>
+      <li><strong>Scoped group.</strong> The SP can only touch the overseas group, not arbitrary privileged groups.</li>
+    </ul>
+
+    <h3>Audit &amp; compliance</h3>
+    <ul>
+      <li><strong>Entra audit logs</strong> capture every assignment immutably — export to Log Analytics for long retention if your policy needs it.</li>
+      <li><strong>Approvals history</strong> preserves the decision chain; the state row preserves field-level data and timestamps.</li>
+      <li><strong>Access reviews</strong> (Governance) can periodically recertify who's in the overseas group — useful evidence in a healthcare compliance context.</li>
+      <li><strong>Separation of duties:</strong> the requester can't approve; approver stages are distinct roles; provisioning is performed by a non-human identity.</li>
+    </ul>
+    <div class="note risk">
+      <span class="tag">Governance dependency</span>
+      The auto-expiry control relies on the tenant retaining Entra ID P2 / Governance licensing for assigned users. Document this as a control dependency — if licensing lapses, time-bound assignments silently become permanent.
+    </div>
+  </section>
+
+  <!-- ============ COST ============ -->
+  <section id="cost">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Licensing &amp; cost</h2></div>
+    <p class="lede">The architecture is deliberately shaped so that <strong>almost everything runs on connectors already covered by your M365 entitlement</strong>. Cost concentrates in exactly one place: the privileged Graph call.</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Component</th><th>Connector class</th><th>Cost impact</th></tr></thead>
+      <tbody>
+        <tr><td>Forms, Approvals, SharePoint, Teams, Outlook, scheduled/automated flows</td><td>Standard</td><td><span class="pill zero">Included in M365 E3/E5</span></td></tr>
+        <tr><td>PIM for Groups (time-bound active assignment)</td><td>Entra ID</td><td><span class="pill low">P2 / Governance per assigned user — already in use</span></td></tr>
+        <tr><td>Graph call via <b>HTTP</b> action (the provisioning leg)</td><td>Premium</td><td><span class="pill add">Needs a premium path</span></td></tr>
+        <tr><td>ServiceNow writeback connector</td><td>Premium</td><td><span class="pill add">Same bucket as above</span></td></tr>
+        <tr><td>Dataverse (if used as system of record)</td><td>Premium</td><td><span class="pill add">Power Platform licence</span></td></tr>
+        <tr><td>Azure Function / Logic App (Consumption) host for the Graph call</td><td>Azure</td><td><span class="pill low">Pay-per-run — cents/month at this volume</span></td></tr>
+        <tr><td>Entitlement Management / Access Reviews / Lifecycle Workflows (Tier 3a)</td><td>Entra ID Governance</td><td><span class="pill add">Governance add-on per user</span></td></tr>
+        <tr><td>Key Vault, Log Analytics, App Insights</td><td>Azure</td><td><span class="pill low">Negligible at this scale</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h3>Cheapest way to cover the one premium leg</h3>
+    <p>Three options, lowest-friction first:</p>
+    <ul>
+      <li><strong>Host the Graph call in an Azure Function or Logic App (Consumption)</strong> and have the standard flow call it. This sidesteps Power Automate premium entirely; at this request volume the Azure bill is effectively rounding error, and you get managed identity (no secret). <em>Usually the most cost-effective.</em></li>
+      <li><strong>A Power Automate <em>per-flow / Process</em> licence</strong> attached to the single provisioning flow covers <em>all</em> users of that flow for a flat monthly fee — clean when you'd rather keep everything in Power Automate.</li>
+      <li><strong>A Power Automate <em>Premium per-user</em> licence</strong> on the flow's owner/service account — simplest to reason about for a single low-volume automation, billed per user.</li>
+    </ul>
+    <div class="note">
+      <span class="tag">On the figures</span>
+      Microsoft renamed and re-priced Power Platform plans through 2025–2026 (the per-app plan was retired, per-flow became "Process", and some seeded credits change later in 2026). Treat any list price as indicative and confirm current NZ pricing via your EA/CSP before committing — the <em>architecture</em> doesn't change, only which line item you choose.
+    </div>
+  </section>
+
+  <!-- ============ OPS ============ -->
+  <section id="ops">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Operations: errors, failures, logging, scale</h2></div>
+
+    <h3>Error handling &amp; approval failures</h3>
+    <ul>
+      <li><strong>Validation gates</strong> on both sides of approvals; invalid or declined requests return to the employee with a clear reason and never reach provisioning.</li>
+      <li><strong>Approval timeouts</strong> per stage drive reminders, then escalation/reassignment — overdue approvals can't stall silently.</li>
+      <li><strong>Scope/Try-Catch pattern</strong> in the flow: wrap provisioning in a scope with a configured run-after "failed" branch that alerts your team in Teams and writes the failure to the audit record.</li>
+    </ul>
+
+    <h3>API failures &amp; idempotency</h3>
+    <ul>
+      <li><strong>Throttling (HTTP 429):</strong> honour <code>Retry-After</code> with exponential back-off; Graph PIM endpoints are rate-limited.</li>
+      <li><strong>Pre-flight check:</strong> use the request's <code>isValidationOnly</code> mode to test the assignment before committing, surfacing policy/MFA blockers early.</li>
+      <li><strong>Idempotency:</strong> before posting, check for an existing active assignment for that user+group to avoid duplicates on retries.</li>
+      <li><strong>Token handling:</strong> cache the app-only token to its expiry; handle 401 by refreshing once before failing.</li>
+    </ul>
+
+    <h3>Logging, monitoring, reporting</h3>
+    <ul>
+      <li><strong>Run history</strong> in Power Automate for day-to-day triage; pipe failures to a monitored Teams channel.</li>
+      <li><strong>Entra audit logs → Log Analytics</strong> for durable, queryable history and alerting on anomalies.</li>
+      <li><strong>Dashboard:</strong> Power BI over the state list/Dataverse — requests in flight, time-in-stage, approvals SLA, upcoming expiries, exceptions.</li>
+    </ul>
+
+    <h3>Future scalability</h3>
+    <p>The pattern — validated request → multi-stage approval → app-only, time-bound grant → auto-expiry → audit — generalises to any temporary-access scenario (contractor access, temporary elevated roles, project groups). Parameterise the target group and approver chain and the same engine serves many request types. Moving the provisioning leg to Logic Apps/Functions (Tier 3b) gives you independent scaling and full telemetry as volume grows.</p>
+  </section>
+
+  <!-- ============ APPENDIX ============ -->
+  <section id="appendix">
+    <div class="sec-head"><span class="sec-num">10</span><h2>Technical appendix</h2></div>
+    <h3>The one call that does the work</h3>
+    <p>On full approval, the flow (or the Function it calls) posts an <strong>active, time-bound</strong> membership. <code>startDateTime</code> activates access; <code>expiration</code> with an <code>endDateTime</code> makes PIM remove it automatically. <code>ticketInfo</code> links the ITSM record.</p>
+<pre><code><span class="c"># POST against Microsoft Graph — PIM for Groups</span>
+POST https://graph.microsoft.com/v1.0/identityGovernance/privilegedAccess/group/assignmentScheduleRequests
+Authorization: Bearer &lt;app-only token&gt;
+Content-Type: application/json
+
+{
+  <span class="k">"action"</span>:      <span class="s">"adminAssign"</span>,
+  <span class="k">"accessId"</span>:    <span class="s">"member"</span>,
+  <span class="k">"groupId"</span>:     <span class="s">"&lt;overseas-workers-group-id&gt;"</span>,
+  <span class="k">"principalId"</span>: <span class="s">"&lt;approved-user-object-id&gt;"</span>,
+  <span class="k">"justification"</span>: <span class="s">"Overseas work — approved request &lt;ref&gt;"</span>,
+  <span class="k">"scheduleInfo"</span>: {
+    <span class="k">"startDateTime"</span>: <span class="s">"2026-07-01T00:00:00Z"</span>,
+    <span class="k">"expiration"</span>: {
+      <span class="k">"type"</span>:        <span class="s">"afterDateTime"</span>,
+      <span class="k">"endDateTime"</span>: <span class="s">"2026-09-30T23:59:59Z"</span>
+    }
+  },
+  <span class="k">"ticketInfo"</span>: {
+    <span class="k">"ticketNumber"</span>: <span class="s">"&lt;ServiceNow ref&gt;"</span>,
+    <span class="k">"ticketSystem"</span>: <span class="s">"ServiceNow"</span>
+  }
+}</code></pre>
+    <div class="note key">
+      <span class="tag">Read this line twice</span>
+      Because <code>expiration.endDateTime</code> is the approved overseas end date, <strong>no removal logic is ever written or maintained</strong>. Set the dates correctly once and the platform owns the rest of the lifecycle. Set <code>"isValidationOnly": true</code> first to dry-run the request before committing.
+    </div>
+
+    <h3>Build order</h3>
+    <ol>
+      <li>Stand up Tier 1 (Forms + Approvals + list + notifications) and run it live — immediate relief.</li>
+      <li>Register the Entra app, grant the least-privilege Graph permission, store the secret in Key Vault (or use a managed identity via a Function).</li>
+      <li>Add the validated Graph call behind a Try-Catch scope; dry-run with <code>isValidationOnly</code>.</li>
+      <li>Wire ServiceNow writeback and the Power BI dashboard.</li>
+      <li>Layer access reviews / recertification; evaluate Entitlement Management as the longer-term home (Tier 3a).</li>
+    </ol>
+
+    <footer>
+      <p>Prepared as an options analysis for the HNZ overseas-work access process. Connector classes, Graph endpoints and licensing models reflect Microsoft documentation current as of mid-2026; confirm exact least-privilege Graph scopes and current NZ pricing at build time. The architecture and its trade-offs are independent of those line-item details.</p>
+      <p><a class="up" href="#verdict">↑ Back to the recommendation</a></p>
+    </footer>
+  </section>
+
+</div>
+</body>
+</html>

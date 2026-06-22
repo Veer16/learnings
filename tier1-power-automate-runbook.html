@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tier 1 — Power Automate Build Runbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16202b;--ink-soft:#33424f;--paper:#fbfcfd;--panel:#fff;
+    --slate:#5a6b7b;--hair:#dce3e9;--hair-2:#eaeff3;
+    --accent:#0b6e78;--accent-deep:#084e56;
+    --good:#2e7d5b;--good-bg:#e8f3ed;
+    --warn:#b9722a;--warn-bg:#f7efe5;
+    --stop:#b1473f;--stop-bg:#f6e9e8;
+    --purple:#5a4b9c;--purple-bg:#eeeaf6;
+    --radius:4px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px;margin:0 auto;padding:0 28px 120px;}
+
+  header.mast{border-bottom:2px solid var(--ink);padding:54px 0 26px;margin-bottom:8px;}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:500;margin:0 0 18px;}
+  h1{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:clamp(30px,5vw,44px);line-height:1.05;letter-spacing:-.02em;margin:0 0 14px;}
+  .standfirst{font-size:18px;color:var(--ink-soft);max-width:64ch;margin:0;}
+  .meta{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:24px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--slate);}
+  .meta b{color:var(--ink);font-weight:500;}
+
+  nav.toc{margin:30px 0 12px;padding:20px 22px;border:1px solid var(--hair);border-radius:var(--radius);background:linear-gradient(180deg,#fff,#f7fafb);}
+  nav.toc p{margin:0 0 12px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--slate);}
+  nav.toc ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr 1fr;gap:6px 28px;counter-reset:toc;}
+  nav.toc a{display:flex;gap:12px;align-items:baseline;text-decoration:none;color:var(--ink-soft);font-size:14.5px;padding:3px 0;border-bottom:1px solid transparent;}
+  nav.toc a:hover{color:var(--accent);border-bottom-color:var(--hair);}
+  nav.toc a::before{counter-increment:toc;content:counter(toc,decimal-leading-zero);font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent);}
+  @media(max-width:640px){nav.toc ol{grid-template-columns:1fr;}}
+
+  section{padding-top:46px;}
+  .sec-head{display:flex;align-items:baseline;gap:16px;border-bottom:1px solid var(--hair);padding-bottom:10px;margin-bottom:22px;}
+  .sec-num{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--accent);font-weight:500;padding-top:6px;}
+  h2{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:25px;letter-spacing:-.015em;margin:0;line-height:1.15;}
+  h3{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:18px;letter-spacing:-.01em;margin:30px 0 8px;}
+  p{margin:0 0 14px;}
+  a{color:var(--accent-deep);}
+  ul,ol{margin:0 0 16px;padding-left:22px;}
+  li{margin-bottom:7px;}
+  .lede{font-size:17px;color:var(--ink-soft);}
+
+  /* step block */
+  .step{border:1px solid var(--hair);border-radius:var(--radius);margin:18px 0;overflow:hidden;}
+  .step-head{display:flex;align-items:center;gap:14px;padding:13px 18px;background:#f4f8f9;border-bottom:1px solid var(--hair);}
+  .step-n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;}
+  .step-head h3{margin:0;font-size:17px;}
+  .step-body{padding:16px 18px;}
+  .action{display:inline-flex;align-items:center;gap:7px;flex-wrap:wrap;font-family:"IBM Plex Mono",monospace;font-size:12px;background:#0f1922;color:#d7e1e8;padding:5px 10px;border-radius:3px;margin:0 0 10px;}
+  .action .conn{color:#7fd4dc;}
+  .why{border-left:3px solid var(--good);background:var(--good-bg);padding:11px 15px;border-radius:0 var(--radius) var(--radius) 0;margin:12px 0 2px;font-size:14px;}
+  .why b{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--good);display:block;margin-bottom:3px;font-weight:500;}
+
+  .note{border-left:3px solid var(--slate);background:#f4f7f9;padding:13px 17px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;font-size:15px;}
+  .note.risk{border-left-color:var(--warn);background:var(--warn-bg);}
+  .note.stop{border-left-color:var(--stop);background:var(--stop-bg);}
+  .note.key{border-left-color:var(--good);background:var(--good-bg);}
+  .note .tag{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.13em;text-transform:uppercase;display:block;margin-bottom:5px;color:var(--slate);}
+  .note.risk .tag{color:var(--warn);}.note.stop .tag{color:var(--stop);}.note.key .tag{color:var(--good);}
+
+  .tbl-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--hair);border-radius:var(--radius);}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px;}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--hair-2);vertical-align:top;}
+  thead th{background:#f1f5f7;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--slate);font-weight:500;border-bottom:1px solid var(--hair);}
+  tbody tr:last-child td{border-bottom:none;}
+  td code,td b{white-space:normal;}
+
+  pre{background:#0f1922;color:#d7e1e8;border-radius:var(--radius);padding:15px 17px;overflow-x:auto;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.55;margin:12px 0;}
+  pre .k{color:#7fd4dc;}pre .s{color:#c4d99a;}pre .c{color:#6c7e89;font-style:italic;}pre .f{color:#e0b277;}
+  code{font-family:"IBM Plex Mono",monospace;font-size:.88em;background:#eef2f4;padding:1px 5px;border-radius:3px;}
+  pre code{background:none;padding:0;}
+
+  .figure{margin:20px 0;border:1px solid var(--hair);border-radius:var(--radius);background:#fff;padding:6px;}
+  .figure svg{display:block;width:100%;height:auto;}
+  figcaption{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--slate);padding:8px 12px 4px;}
+
+  .check{list-style:none;padding:0;}
+  .check li{padding-left:30px;position:relative;margin-bottom:9px;}
+  .check li::before{content:"";position:absolute;left:0;top:3px;width:17px;height:17px;border:1.5px solid var(--accent);border-radius:3px;}
+  .check li::after{content:"✓";position:absolute;left:3.5px;top:1px;color:var(--accent);font-size:13px;}
+
+  footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--hair);font-size:13px;color:var(--slate);}
+  a.up{font-family:"IBM Plex Mono",monospace;font-size:12px;text-decoration:none;color:var(--accent);}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <p class="eyebrow">Build runbook · Tier 1 · Zero premium connectors</p>
+    <h1>Tier 1 in Power Automate — step by step, and why each step exists</h1>
+    <p class="standfirst">A follow-along build for the overseas-work intake &amp; approval flow: Microsoft Forms in, three tracked approvals with reminders and escalation, validated, logged to a SharePoint list, and handed to your team as one clean record. Everything here runs on connectors already in your M365 licence.</p>
+    <div class="meta">
+      <span><b>Connectors</b> Forms · Office 365 Users · SharePoint · Approvals · Outlook · Teams</span>
+      <span><b>Premium</b> None</span>
+      <span><b>Scope</b> Intake → approvals → validation → handoff</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <p>On this page</p>
+    <ol>
+      <li><a href="#prereq">Prerequisites &amp; the Dataverse gotcha</a></li>
+      <li><a href="#decisions">Three design decisions to make first</a></li>
+      <li><a href="#datastore">Build the SharePoint list (record of truth)</a></li>
+      <li><a href="#form">Build the Microsoft Form</a></li>
+      <li><a href="#map">The flow at a glance</a></li>
+      <li><a href="#flow">The flow, action by action</a></li>
+      <li><a href="#escalation">The reminder &amp; escalation pattern</a></li>
+      <li><a href="#validation">Validation expressions you can paste</a></li>
+      <li><a href="#test">Test plan &amp; go-live checklist</a></li>
+      <li><a href="#gotchas">Gotchas worth knowing now</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 PREREQ -->
+  <section id="prereq">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Prerequisites &amp; the one thing that surprises people</h2></div>
+    <ul>
+      <li><strong>A Power Automate environment</strong> you can build in (the default environment is fine to start).</li>
+      <li><strong>A SharePoint site</strong> where you can create a list (a team site you own).</li>
+      <li><strong>Permission to create a Microsoft Form</strong> (any M365 user).</li>
+      <li><strong>Three approver mailboxes/groups:</strong> the manager is resolved automatically; HR and Protective Services should each be a <em>mail-enabled group</em> (not a single person) so cover and turnover don't break the flow.</li>
+      <li><strong>A service/shared account to own the flow</strong> — strongly recommended so the automation isn't tied to your personal identity (and doesn't break when someone leaves).</li>
+    </ul>
+    <div class="note risk">
+      <span class="tag">The Dataverse gotcha</span>
+      The <strong>Approvals</strong> connector stores its records in <strong>Microsoft Dataverse</strong>. The first time anyone runs an approval flow in an environment, the system auto-provisions a Dataverse database, and <strong>the person who runs that first flow needs an environment admin role</strong>. After that, other makers don't need elevated rights. It can take a few minutes the first run. This is included with your licence — it isn't a premium/paid component — but plan for it so the first test run doesn't fail mysteriously.
+    </div>
+  </section>
+
+  <!-- 2 DECISIONS -->
+  <section id="decisions">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Three design decisions, made up front</h2></div>
+
+    <h3>1 · Sequential approvals, not parallel</h3>
+    <p>Route <strong>Manager → HR → Protective Services in sequence</strong>. If the manager declines, HR and Protective Services are never disturbed, and the chain mirrors how authority actually flows. (Parallel is faster but bothers everyone at once and is harder to reason about for an access-control decision.)</p>
+
+    <h3>2 · "Create an approval" + "Wait for an approval", not "Start and wait"</h3>
+    <p>"Start and wait for an approval" is the one-action shortcut, but it <strong>does not expose the Approval ID</strong>, which you need to send reminders or cancel a pending request. Splitting into <strong>Create an approval</strong> (which returns the Approval ID) and <strong>Wait for an approval</strong> unlocks the reminder/escalation pattern in §07.</p>
+    <div class="note">
+      <span class="tag">Shortcut option</span>
+      If you want the very fastest first cut, you <em>can</em> use <strong>Start and wait for an approval</strong> per stage with a <strong>Timeout</strong> set in the action's Settings, and a "run after → has timed out" branch for escalation. It's simpler but gives you no mid-wait reminders. Start there if you're time-boxed, then upgrade to the split pattern.
+    </div>
+
+    <h3>3 · Approval type "First to respond" with a single assignee per stage</h3>
+    <p>Each stage has one decision-maker (or one group acting as one). Use <strong>Approve/Reject – First to respond</strong> so the first response from the assigned group settles that stage. ("Everyone must approve" is for when every named person must individually sign off — not what you want when HR is a shared queue.)</p>
+  </section>
+
+  <!-- 3 DATASTORE -->
+  <section id="datastore">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Build the SharePoint list — your record of truth</h2></div>
+    <p class="lede">This list is where every request lives, gets its status updated at each gate, and becomes the clean handoff to your team. Create it before the flow so the columns exist to write to.</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Column</th><th>Type</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><b>Title</b></td><td>Single line</td><td>Request reference (e.g. requester + start month).</td></tr>
+        <tr><td><b>RequesterName</b> / <b>RequesterEmail</b></td><td>Text / Text</td><td>Who's going overseas; email drives all lookups.</td></tr>
+        <tr><td><b>ManagerEmail</b></td><td>Text</td><td>Resolved from Entra, not typed by the user.</td></tr>
+        <tr><td><b>OverseasLocation</b></td><td>Single line</td><td>Country / city of remote work.</td></tr>
+        <tr><td><b>StartDate</b> / <b>EndDate</b></td><td>Date</td><td>Approved working window. Feeds the future PIM dates.</td></tr>
+        <tr><td><b>DurationDays</b></td><td>Number</td><td>Computed by the flow; used for the policy-cap check.</td></tr>
+        <tr><td><b>Justification</b></td><td>Multi-line</td><td>Business reason shown to approvers.</td></tr>
+        <tr><td><b>Status</b></td><td>Choice</td><td>Submitted · Returned-Invalid · Pending Manager · Pending HR · Pending ProtSvc · Approved-Ready · Rejected.</td></tr>
+        <tr><td><b>ManagerDecision</b> / <b>HRDecision</b> / <b>ProtSvcDecision</b></td><td>Choice</td><td>Approve / Reject per stage, plus a comments column each.</td></tr>
+        <tr><td><b>ApprovedOn</b></td><td>Date/Time</td><td>When the chain completed — your SLA evidence.</td></tr>
+        <tr><td><b>ServiceNowRef</b></td><td>Single line</td><td>Optional link back to the ITSM record.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="why"><b>Why a list at all</b>Power Automate runs are ephemeral and hard to report on. A list gives you durable state, a dashboard source, and a single object your team opens instead of scrolling a queue. Updating <code>Status</code> at each gate is what makes progress visible.</div>
+  </section>
+
+  <!-- 4 FORM -->
+  <section id="form">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Build the Microsoft Form</h2></div>
+    <p>Keep it short — every field you ask for is a field you must validate. Restrict the form to your organisation so it records the responder's identity (you'll use that as the requester, and to resolve the manager).</p>
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Question</th><th>Type</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Overseas location (country/city)</td><td>Text</td><td>Required.</td></tr>
+        <tr><td>Start date</td><td>Date</td><td>Required.</td></tr>
+        <tr><td>End date</td><td>Date</td><td>Required.</td></tr>
+        <tr><td>Business justification</td><td>Long text</td><td>Required; shown to approvers.</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="note key">
+      <span class="tag">Don't ask for the manager</span>
+      Resolving the manager from Entra (next section) removes the most common cause of misrouted approvals — a user typing the wrong name. The form stays to four questions; identity and manager come from the directory.
+    </div>
+  </section>
+
+  <!-- 5 MAP -->
+  <section id="map">
+    <div class="sec-head"><span class="sec-num">05</span><h2>The flow at a glance</h2></div>
+    <figure class="figure">
+      <svg viewBox="0 0 860 300" role="img" aria-label="Flow sequence: trigger, get details, resolve manager, create record, validate, three sequential approval gates, then handoff.">
+        <defs>
+          <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#5a6b7b"/></marker>
+          <style>
+            .b{fill:#fff;stroke:#cdd7de;stroke-width:1.2;}
+            .g{fill:#e8f3ed;stroke:#2e7d5b;}
+            .v{fill:#f7efe5;stroke:#b9722a;}
+            .lbl{font-family:'IBM Plex Sans';font-size:11.5px;fill:#16202b;}
+            .sub{font-family:'IBM Plex Mono',monospace;font-size:8.5px;fill:#5a6b7b;}
+            .ln{stroke:#5a6b7b;stroke-width:1.3;fill:none;}
+          </style>
+        </defs>
+        <!-- row 1 -->
+        <rect class="b" x="12" y="22" width="120" height="46" rx="4"/><text class="lbl" x="24" y="42">Form submitted</text><text class="sub" x="24" y="57">trigger</text>
+        <rect class="b" x="156" y="22" width="120" height="46" rx="4"/><text class="lbl" x="168" y="42">Get details</text><text class="sub" x="168" y="57">+ resolve manager</text>
+        <rect class="b" x="300" y="22" width="120" height="46" rx="4"/><text class="lbl" x="312" y="42">Create record</text><text class="sub" x="312" y="57">SharePoint item</text>
+        <rect class="v" x="444" y="22" width="120" height="46" rx="4"/><text class="lbl" x="456" y="42">Validate</text><text class="sub" x="456" y="57">dates · duration</text>
+        <path class="ln" d="M132,45 L156,45" marker-end="url(#a)"/>
+        <path class="ln" d="M276,45 L300,45" marker-end="url(#a)"/>
+        <path class="ln" d="M420,45 L444,45" marker-end="url(#a)"/>
+        <!-- down -->
+        <path class="ln" d="M504,68 L504,110" marker-end="url(#a)"/>
+        <text class="sub" x="512" y="92">valid →</text>
+        <!-- row 2 approvals -->
+        <rect class="b" x="12" y="116" width="150" height="52" rx="4"/><text class="lbl" x="24" y="138">1 · Manager</text><text class="sub" x="24" y="153">approve / reject</text>
+        <rect class="b" x="190" y="116" width="150" height="52" rx="4"/><text class="lbl" x="202" y="138">2 · HR</text><text class="sub" x="202" y="153">approve / reject</text>
+        <rect class="b" x="368" y="116" width="150" height="52" rx="4"/><text class="lbl" x="380" y="138">3 · Protective Svc</text><text class="sub" x="380" y="153">approve / reject</text>
+        <rect class="g" x="566" y="116" width="160" height="52" rx="4"/><text class="lbl" x="578" y="138">Approved — Ready</text><text class="sub" x="578" y="153">notify team + user</text>
+        <path class="ln" d="M504,116 L504,92 L87,92 L87,116" marker-end="url(#a)"/>
+        <path class="ln" d="M162,142 L190,142" marker-end="url(#a)"/>
+        <path class="ln" d="M340,142 L368,142" marker-end="url(#a)"/>
+        <path class="ln" d="M518,142 L566,142" marker-end="url(#a)"/>
+        <!-- reject path -->
+        <rect class="b" x="190" y="206" width="200" height="46" rx="4" stroke="#b1473f"/><text class="lbl" x="202" y="226">Any reject / timeout</text><text class="sub" x="202" y="241">update status · notify requester · stop</text>
+        <path class="ln" d="M265,168 L265,206" marker-end="url(#a)" stroke="#b1473f"/>
+        <path class="ln" d="M443,168 L443,206 L390,206" marker-end="url(#a)" stroke="#b1473f"/>
+        <path class="ln" d="M87,168 L87,229 L190,229" marker-end="url(#a)" stroke="#b1473f"/>
+        <!-- invalid path -->
+        <text class="sub" x="600" y="40" fill="#b1473f">invalid → return to requester</text>
+      </svg>
+      <figcaption>Three sequential gates. Any reject or timeout exits cleanly to the requester; a clean pass ends in one handoff record.</figcaption>
+    </figure>
+  </section>
+
+  <!-- 6 FLOW -->
+  <section id="flow">
+    <div class="sec-head"><span class="sec-num">06</span><h2>The flow, action by action</h2></div>
+    <p class="lede">Build an <strong>automated cloud flow</strong>. Each step below names the exact connector and action, what to set, and what it teaches.</p>
+
+    <!-- step 1 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">1</span><h3>Trigger on form submission</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">Microsoft Forms</span> · When a new response is submitted</span>
+        <p>Select your form. The trigger fires once per submission but only gives you a <em>response ID</em>, not the answers.</p>
+        <div class="why"><b>Teaches</b>Forms triggers are intentionally lightweight — they hand you a pointer, and you fetch the content in the next step. This keeps the trigger fast and lets one flow serve high volumes.</div>
+      </div>
+    </div>
+
+    <!-- step 2 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">2</span><h3>Fetch the answers</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">Microsoft Forms</span> · Get response details</span>
+        <p>Pass the <code>Response Id</code> from the trigger. You now have the location, dates, justification, and — because the form is org-restricted — the <strong>Responder's email</strong>.</p>
+        <div class="why"><b>Teaches</b>"Get response details" is the partner to every Forms trigger. The <em>Responder's email</em> token is your anchor identity for everything downstream.</div>
+      </div>
+    </div>
+
+    <!-- step 3 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">3</span><h3>Resolve the requester &amp; their manager from the directory</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">Office 365 Users</span> · Get user profile (V2)</span>
+        <span class="action"><span class="conn">Office 365 Users</span> · Get manager (V2)</span>
+        <p>Feed the responder's email into <strong>Get user profile (V2)</strong> (gives display name, UPN, department) and into <strong>Get manager (V2)</strong> (gives the manager's email and name). Use the manager's <code>Mail</code> for the first approval stage.</p>
+        <div class="note risk"><span class="tag">Handle the null</span>If a user has no manager set in Entra, <strong>Get manager (V2)</strong> fails. Wrap it in a scope or add a "configure run after → has failed" branch that routes to a fallback approver (e.g. a managers' distribution group) and flags the record, rather than letting the whole flow error out.</div>
+        <div class="why"><b>Teaches</b>Directory-sourced approvers are the single biggest reliability win in Tier 1 — you've eliminated mistyped names and stale manager data in one move.</div>
+      </div>
+    </div>
+
+    <!-- step 4 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">4</span><h3>Create the record</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">SharePoint</span> · Create item</span>
+        <p>Write all captured fields into the list with <code>Status = Submitted</code>. Keep the returned <strong>ID</strong> and <strong>Link to item</strong> — you'll reference both in updates and approval cards.</p>
+        <div class="why"><b>Teaches</b>Persisting state immediately means that even if a later step fails, the request is never lost — you have a row to inspect and resume from.</div>
+      </div>
+    </div>
+
+    <!-- step 5 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">5</span><h3>Validate before bothering any approver</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">Control</span> · Condition (or Scope + Condition)</span>
+        <p>Check: both dates present, start not in the past, end after start, and duration within policy (see §08 for the exact expressions). Compute <code>DurationDays</code> and store it.</p>
+        <p><strong>If invalid:</strong> update <code>Status = Returned-Invalid</code>, send the requester a specific "here's what to fix" email, then <span class="action" style="margin:0"><span class="conn">Control</span> · Terminate</span> with status <em>Cancelled</em>.</p>
+        <div class="why"><b>Teaches</b>Validation-first is the whole point of Tier 1. Catching bad requests here is what ends the back-and-forth your team does today — garbage never enters the approval chain.</div>
+      </div>
+    </div>
+
+    <!-- step 6 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">6</span><h3>Gate 1 — Manager approval</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">Approvals</span> · Create an approval &nbsp;→&nbsp; Wait for an approval</span>
+        <p>Update <code>Status = Pending Manager</code>. Then <strong>Create an approval</strong>:</p>
+        <ul>
+          <li><strong>Approval type:</strong> Approve/Reject – First to respond</li>
+          <li><strong>Assigned to:</strong> the manager's email from step 3</li>
+          <li><strong>Title:</strong> e.g. <code>Overseas work — [RequesterName] — [Location]</code></li>
+          <li><strong>Details:</strong> a markdown summary (dates, duration, justification)</li>
+          <li><strong>Item link:</strong> the SharePoint item link from step 4</li>
+        </ul>
+        <p>Capture the <strong>Approval ID</strong>, then add <strong>Wait for an approval</strong> referencing it (the reminder loop in §07 sits alongside this). On completion, branch on <strong>Outcome</strong>:</p>
+        <ul>
+          <li><strong>Approve →</strong> write <code>ManagerDecision = Approve</code> + comments, continue to Gate 2.</li>
+          <li><strong>Reject →</strong> <code>Status = Rejected</code>, notify requester with the comment, Terminate.</li>
+        </ul>
+        <div class="why"><b>Teaches</b>The <em>Outcome</em> and <em>Responses</em> tokens carry the decision, the approver, the comment and the timestamp. Writing them to the list at each gate is how you build an audit trail with zero extra effort.</div>
+      </div>
+    </div>
+
+    <!-- step 7 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">7</span><h3>Gate 2 &amp; Gate 3 — HR, then Protective Services</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">Approvals</span> · Create an approval &nbsp;→&nbsp; Wait for an approval &nbsp;(×2)</span>
+        <p>Repeat the Gate 1 pattern, assigning to the <strong>HR group</strong> then the <strong>Protective Services group</strong>, updating <code>Status</code> to <em>Pending HR</em> and <em>Pending ProtSvc</em> as you enter each. Same approve/reject branching; same write-back of decision + comment.</p>
+        <div class="why"><b>Teaches</b>Assigning to a <em>group</em> (with First-to-respond) means anyone on the HR/Protective Services queue can action it — resilient to leave and turnover, unlike naming an individual.</div>
+      </div>
+    </div>
+
+    <!-- step 8 -->
+    <div class="step">
+      <div class="step-head"><span class="step-n">8</span><h3>All approved — the clean handoff</h3></div>
+      <div class="step-body">
+        <span class="action"><span class="conn">SharePoint</span> · Update item</span>
+        <span class="action"><span class="conn">Teams</span> · Post message</span>
+        <span class="action"><span class="conn">Office 365 Outlook</span> · Send an email (V2)</span>
+        <p>Set <code>Status = Approved-Ready</code> and stamp <code>ApprovedOn</code>. Post a message to your team's Teams channel <em>and</em> email the team queue with the validated summary and the list-item link. Email the requester that it's approved and being provisioned.</p>
+        <div class="why"><b>Teaches</b>This single notification is what fixes your visibility problem. Your team stops watching a silent queue and instead receives one fully-validated, fully-approved record — the manual PIM step that remains is now a one-minute action with no ambiguity.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 ESCALATION -->
+  <section id="escalation">
+    <div class="sec-head"><span class="sec-num">07</span><h2>The reminder &amp; escalation pattern</h2></div>
+    <p class="lede">This is the piece that stops approvals sitting for days. It lives <em>inside</em> each gate, running beside the "Wait for an approval".</p>
+    <p>After <strong>Create an approval</strong>, add a <strong>Control · Parallel branch</strong> so two things run at once:</p>
+    <ol>
+      <li><strong>Branch A — Wait for an approval</strong> (referencing the Approval ID). This completes the moment the approver responds.</li>
+      <li><strong>Branch B — the reminder loop:</strong> a <strong>Do until</strong> that exits when the approval is responded to, containing a <strong>Delay</strong> (e.g. 2 days) followed by a reminder email/Teams nudge to the approver.</li>
+    </ol>
+    <p>For hard escalation, give the <strong>Wait for an approval</strong> a <strong>Timeout</strong> in its Settings (ISO 8601, e.g. <code>P3D</code> = 3 days). Add a branch with <strong>Configure run after → "has timed out"</strong> that reassigns to a fallback approver (a delegate or the manager's manager) and flags the record.</p>
+    <div class="note stop">
+      <span class="tag">Hard platform limit</span>
+      Power Automate approvals time out after <strong>30 days</strong> — long-running approvals beyond that need a restart pattern (re-create the approval and resume). For this process, keep stage timeouts short (2–3 business days) so you never approach that ceiling, and escalation handles the stragglers.
+    </div>
+    <div class="note risk">
+      <span class="tag">Do-until tuning</span>
+      A naïve Do-until reminder waits the full Delay even after the approver responds, and can fire a final reminder late. Set the loop's exit condition to check the approval's response state, and keep the Delay modest. If this gets fiddly, ship the simpler "Timeout + escalate on timed-out" version first and add reminders later.
+    </div>
+  </section>
+
+  <!-- 8 VALIDATION -->
+  <section id="validation">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Validation expressions you can paste</h2></div>
+    <p class="lede">Use these in the Condition's expression editor. They compare dates by <code>ticks</code> (100-nanosecond units), which avoids string/locale pitfalls. Replace <code>StartDate</code>/<code>EndDate</code> with your Forms tokens.</p>
+
+    <h3>End date must be after start date</h3>
+<pre><code><span class="f">greater</span>(<span class="f">ticks</span>(<span class="k">EndDate</span>), <span class="f">ticks</span>(<span class="k">StartDate</span>))   <span class="c">// true = valid</span></code></pre>
+
+    <h3>Start date not in the past</h3>
+<pre><code><span class="f">greaterOrEquals</span>(<span class="f">ticks</span>(<span class="k">StartDate</span>), <span class="f">ticks</span>(<span class="f">startOfDay</span>(<span class="f">utcNow</span>())))</code></pre>
+
+    <h3>Duration in days, and a 90-day policy cap</h3>
+<pre><code><span class="c">// days between the two dates</span>
+<span class="f">div</span>(<span class="f">sub</span>(<span class="f">ticks</span>(<span class="k">EndDate</span>), <span class="f">ticks</span>(<span class="k">StartDate</span>)), <span class="k">864000000000</span>)
+
+<span class="c">// cap check — true = within policy</span>
+<span class="f">lessOrEquals</span>(
+  <span class="f">div</span>(<span class="f">sub</span>(<span class="f">ticks</span>(<span class="k">EndDate</span>), <span class="f">ticks</span>(<span class="k">StartDate</span>)), <span class="k">864000000000</span>),
+  <span class="k">90</span>
+)</code></pre>
+
+    <h3>A required field isn't empty</h3>
+<pre><code><span class="f">not</span>(<span class="f">empty</span>(<span class="f">trim</span>(<span class="k">Justification</span>)))</code></pre>
+    <div class="note risk">
+      <span class="tag">Timezone &amp; the boundary</span>
+      Forms date answers and <code>utcNow()</code> are UTC; you're in NZ (UTC+12/+13). For "not in the past" that rarely matters, but when these dates later feed the PIM <code>endDateTime</code> (Tier 2), decide whether the window ends at NZ midnight or UTC midnight and convert with <code>convertTimeZone</code> consistently. Document the choice so Tier 2 inherits it.
+    </div>
+    <div class="why"><b>Teaches</b>Ticks-based math sidesteps the single most common Power Automate bug — comparing dates as strings and getting locale-dependent results. <code>864000000000</code> is the number of ticks in one day.</div>
+  </section>
+
+  <!-- 9 TEST -->
+  <section id="test">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Test plan &amp; go-live checklist</h2></div>
+    <ul class="check">
+      <li><strong>First run as env admin</strong> so the Approvals Dataverse DB provisions cleanly.</li>
+      <li><strong>Happy path:</strong> valid request → all three approve → record reaches <em>Approved-Ready</em> and the team is notified.</li>
+      <li><strong>Invalid dates:</strong> end before start, and a start in the past → both returned to requester with reasons, no approver disturbed.</li>
+      <li><strong>Over-cap duration:</strong> &gt; 90 days → returned as invalid.</li>
+      <li><strong>Rejection at each gate:</strong> confirm the flow stops, status is correct, requester is told why.</li>
+      <li><strong>No manager in Entra:</strong> confirm the fallback branch routes the approval and flags the record (doesn't error).</li>
+      <li><strong>Reminder &amp; timeout:</strong> shorten the Delay/Timeout to minutes for testing, confirm a reminder fires and that timeout escalates.</li>
+      <li><strong>Notifications:</strong> requester and team messages contain the right links and read clearly.</li>
+      <li><strong>Ownership:</strong> flow is owned by the service/shared account, with a co-owner so it's not a single point of failure.</li>
+    </ul>
+  </section>
+
+  <!-- 10 GOTCHAS -->
+  <section id="gotchas">
+    <div class="sec-head"><span class="sec-num">10</span><h2>Gotchas worth knowing now</h2></div>
+    <ul>
+      <li><strong>Dataverse provisioning</strong> needs an env admin on the first-ever approval run in that environment.</li>
+      <li><strong>"Start and wait" hides the Approval ID</strong> — use "Create an approval" + "Wait for an approval" if you want reminders or to cancel a request.</li>
+      <li><strong>30-day approval ceiling</strong> — keep stage timeouts short; escalate stragglers rather than letting them run for weeks.</li>
+      <li><strong>Get manager (V2) throws on null</strong> — always have a fallback approver branch.</li>
+      <li><strong>Date comparisons</strong> — compare by ticks, not as strings; mind the NZ↔UTC offset, especially where these dates feed Tier 2's PIM window.</li>
+      <li><strong>Group approvers, not individuals</strong> — assign HR and Protective Services to mail-enabled groups with First-to-respond so the process survives leave and turnover.</li>
+      <li><strong>Connector check before you call this "free"</strong> — keep every action on the standard connectors listed at the top. If a future change adds an HTTP/Graph/ServiceNow action, that's the Tier 2 jump and brings the premium licensing discussed in the architecture doc.</li>
+    </ul>
+
+    <footer>
+      <p>Companion to the overseas-work approval architecture proposal. Connector and action names reflect Power Automate as documented in mid-2026; the maker UI shifts occasionally, so if a label differs, match on the connector + action description rather than the exact wording. When you're ready, the Tier 2 upgrade adds one Graph call to turn the "Approved-Ready" handoff into automatic, self-expiring provisioning.</p>
+      <p><a class="up" href="#prereq">↑ Back to prerequisites</a></p>
+    </footer>
+  </section>
+
+</div>
+</body>
+</html>

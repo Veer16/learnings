@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NZ Job Market Visualiser</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #07101a;
+      --surface:   #0d1928;
+      --surface-2: #132030;
+      --border:    #1b2f44;
+      --text:      #cfe0f0;
+      --text-2:    #6e90b0;
+      --accent:    #2d8a5e;
+      --serif:     'Fraunces', Georgia, serif;
+      --mono:      'DM Mono', 'Courier New', monospace;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ─────────────────────────────────────────────── */
+    #hdr {
+      padding: 13px 20px 9px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+    #hdr h1 {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.01em;
+      color: #daeeff;
+    }
+    .tagline {
+      font-size: 10px;
+      color: var(--text-2);
+      margin-top: 4px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── CONTROLS ───────────────────────────────────────────── */
+    #ctrl {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .clbl {
+      font-size: 10px;
+      color: var(--text-2);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-right: 2px;
+    }
+    .mbtn {
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+    .mbtn:hover { border-color: var(--accent); color: var(--text); }
+    .mbtn.on    { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+    .help-btn {
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 3px;
+      margin-left: 4px;
+      transition: all 0.12s;
+    }
+    .help-btn:hover { border-color: #4a7c9a; color: var(--text); }
+    .area-note { margin-left: auto; font-size: 10px; color: var(--text-2); }
+
+    /* ── EXPLANATION BOX ────────────────────────────────────── */
+    #expl {
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      padding: 11px 20px;
+      font-size: 11px;
+      color: var(--text-2);
+      line-height: 1.75;
+      display: none;
+      flex-shrink: 0;
+    }
+    #expl strong { color: var(--text); }
+    #expl em { color: #88b8d8; font-style: normal; }
+
+    /* ── MAIN ───────────────────────────────────────────────── */
+    #main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+    /* ── TREEMAP ────────────────────────────────────────────── */
+    #tmap-wrap { flex: 1; overflow: hidden; position: relative; }
+    #tmap-svg  { display: block; }
+
+    /* ── DETAIL PANEL ───────────────────────────────────────── */
+    #detail {
+      width: 222px;
+      min-width: 222px;
+      border-left: 1px solid var(--border);
+      background: var(--surface);
+      overflow-y: auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+      font-size: 11px;
+    }
+    .dp { font-size: 11px; color: var(--text-2); text-align: center; line-height: 1.8; margin-top: 30px; }
+    .d-sect { font-size: 9px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 5px; }
+    .d-name { font-family: var(--serif); font-size: 15px; font-weight: 400; color: #daeeff; line-height: 1.3; }
+    .d-div  { border: none; border-top: 1px solid var(--border); }
+    .d-lbl  { font-size: 9px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+    .d-val  { font-size: 20px; color: var(--text); }
+    .d-note { font-size: 9px; color: var(--text-2); margin-top: 2px; line-height: 1.5; }
+    .ai-wrap { display: flex; align-items: center; gap: 8px; }
+    .ai-bg   { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .ai-fill { height: 100%; border-radius: 3px; }
+    .ai-sc   { font-size: 18px; min-width: 30px; text-align: right; }
+    .d-cav   {
+      font-size: 9px; color: var(--text-2); line-height: 1.65;
+      padding-top: 10px; border-top: 1px solid var(--border); margin-top: auto;
+    }
+
+    /* ── LEGEND ─────────────────────────────────────────────── */
+    #legend {
+      padding: 7px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .ll  { font-size: 9.5px; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; }
+    .li  { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-2); }
+    .lsw { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
+    .lt  { margin-left: auto; font-size: 10px; color: var(--text-2); white-space: nowrap; }
+
+    /* ── SOURCE BAR ─────────────────────────────────────────── */
+    #src {
+      padding: 5px 20px;
+      font-size: 9.5px;
+      color: var(--text-2);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    #src a { color: #4a8ab0; text-decoration: none; }
+    #src a:hover { text-decoration: underline; }
+    .dot { color: var(--border); }
+
+    /* ── TOOLTIP ────────────────────────────────────────────── */
+    #tip {
+      position: fixed;
+      background: rgba(13, 25, 40, 0.97);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 10px 13px;
+      font-size: 11px;
+      line-height: 1.7;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      max-width: 230px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.55);
+    }
+    .t-name { font-family: var(--serif); font-size: 13px; color: #daeeff; margin-bottom: 5px; }
+    .t-row  { color: var(--text-2); }
+    .t-val  { color: var(--text); }
+  </style>
+</head>
+<body>
+
+<div id="hdr">
+  <h1>🇳🇿 NZ Job Market Visualiser</h1>
+  <div class="tagline">Visualising 1.32M workers across 50 occupations &middot; 2023 Census + RBNZ 2026 &middot; MBIE Occupation Outlook &middot; Area proportional to employment</div>
+</div>
+
+<div id="ctrl">
+  <span class="clbl">View:</span>
+  <button class="mbtn on" data-m="aiExposure">Digital AI Exposure</button>
+  <button class="mbtn" data-m="pay">Median Pay</button>
+  <button class="mbtn" data-m="growth">Growth Outlook</button>
+  <button class="help-btn" id="helpBtn">▸ What is Digital AI Exposure?</button>
+  <span class="area-note">Area ∝ Employment</span>
+</div>
+
+<div id="expl">
+  <strong>Digital AI Exposure (0–10)</strong> estimates how much current AI will reshape each occupation.
+  Calibrated using the <em>RBNZ Analytical Note (Feb 2026): "Assessing AI and Robotics Exposure in the NZ Labour Market Using LLMs"</em>
+  — which found that AI exposure is highest in professional, managerial, and administrative occupations and in middle-to-upper income brackets ($50k–$150k). 
+  Machinery operators, labourers, and community workers show significantly lower AI exposure. 
+  Individual occupation scores here apply the Karpathy/BLS digital AI exposure methodology (0–10 scale) calibrated to NZ Census ANZSCO occupations.
+  <br><br>
+  <strong>Key signal:</strong> Jobs done entirely on a computer (writing, coding, analysing, communicating) score 7–10.
+  Jobs requiring physical presence, manual dexterity, or real-time human interaction in unpredictable environments score 1–3.
+  Scores in the 4–6 range indicate a meaningful mix of both.
+  <br><br>
+  <span style="font-size:9.5px;color:#527090;">
+    ⚠ A high score predicts <em>restructuring</em>, not necessarily replacement. Software engineers score 9/10 because AI is transforming their work — 
+    but demand for software could grow as each engineer becomes more productive. The score does not account for demand elasticity, latent demand, 
+    regulatory barriers, or social preferences for human workers.
+  </span>
+</div>
+
+<div id="main">
+  <div id="tmap-wrap">
+    <svg id="tmap-svg"></svg>
+  </div>
+  <div id="detail">
+    <div class="dp">← Click any tile<br>to view details</div>
+  </div>
+</div>
+
+<div id="legend"></div>
+
+<div id="src">
+  <strong>Sources:</strong>
+  <span><a href="https://www.stats.govt.nz/2023-census/" target="_blank">Stats NZ 2023 Census</a> (occupation employment)</span>
+  <span class="dot">·</span>
+  <span><a href="https://www.rbnz.govt.nz/hub/publications/analytical-note/2026/assessing-ai-and-robotics-exposure-in-the-nz-labour-market-using-llms" target="_blank">RBNZ Analytical Note Feb 2026</a> (AI exposure, sector calibration)</span>
+  <span class="dot">·</span>
+  <span><a href="https://occupationoutlook.mbie.govt.nz/" target="_blank">MBIE Occupation Outlook</a> (median pay, growth projections)</span>
+  <span class="dot">·</span>
+  <span>NZ median salary: Stats NZ HLFS June 2025 ($69,836)</span>
+</div>
+
+<div id="tip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+// DATA — 50 NZ occupations (Stats NZ 2023 Census, MBIE, RBNZ 2026)
+//   n  = name
+//   s  = sector (ANZSCO major group)
+//   e  = employment (derived from 2023 Census % × 2,787,000)
+//   p  = median annual pay NZD (MBIE Occupation Outlook estimates)
+//   ai = Digital AI Exposure 0–10 (Karpathy methodology, RBNZ-calibrated)
+//   g  = annual employment growth % (MBIE medium-long-term projections)
+//   gl = growth label
+// ═══════════════════════════════════════════════════════════════════════
+const DATA = [
+  // ── MANAGERS (ANZSCO 1) ──
+  { n:"Chief Executive / MD",            s:"Managers",             e:55400,  p:180000, ai:7.5, g: 2.0,  gl:"Growing"      },
+  { n:"Office Manager",                  s:"Managers",             e:65100,  p:75000,  ai:8.0, g: 0.3,  gl:"Stable"       },
+  { n:"Sales & Marketing Manager",       s:"Managers",             e:37700,  p:115000, ai:7.5, g: 1.5,  gl:"Growing"      },
+  { n:"Corporate General Manager",       s:"Managers",             e:28500,  p:145000, ai:7.0, g: 1.8,  gl:"Growing"      },
+  { n:"Policy & Planning Manager",       s:"Managers",             e:30700,  p:110000, ai:7.0, g: 1.5,  gl:"Growing"      },
+  { n:"Project Builder",                 s:"Managers",             e:38800,  p:110000, ai:5.0, g: 2.0,  gl:"Growing"      },
+  { n:"Retail Manager (General)",        s:"Managers",             e:35600,  p:75000,  ai:6.0, g: 0.5,  gl:"Stable"       },
+  { n:"Corporate Services Manager",      s:"Managers",             e:25800,  p:125000, ai:7.0, g: 1.5,  gl:"Growing"      },
+  { n:"Finance Manager",                 s:"Managers",             e:15100,  p:130000, ai:7.5, g: 1.2,  gl:"Growing"      },
+  { n:"Construction Project Manager",    s:"Managers",             e:14600,  p:130000, ai:6.0, g: 1.8,  gl:"Growing"      },
+  { n:"Specialist Managers nec",         s:"Managers",             e:19400,  p:110000, ai:7.0, g: 1.5,  gl:"Growing"      },
+
+  // ── PROFESSIONALS (ANZSCO 2) ──
+  { n:"Software Engineer",               s:"Professionals",        e:23700,  p:120000, ai:9.0, g: 4.0,  gl:"Growing Fast" },
+  { n:"Developer Programmer",            s:"Professionals",        e:14700,  p:115000, ai:9.0, g: 3.5,  gl:"Growing Fast" },
+  { n:"Systems Analyst",                 s:"Professionals",        e:18100,  p:100000, ai:8.5, g: 2.5,  gl:"Growing"      },
+  { n:"Accountant (General)",            s:"Professionals",        e:30400,  p:90000,  ai:8.0, g: 1.0,  gl:"Stable"       },
+  { n:"Management Consultant",           s:"Professionals",        e:20100,  p:120000, ai:8.0, g: 2.0,  gl:"Growing"      },
+  { n:"Marketing Specialist",            s:"Professionals",        e:18400,  p:90000,  ai:8.0, g: 2.0,  gl:"Growing"      },
+  { n:"Info & Org Professionals nec",    s:"Professionals",        e:25600,  p:90000,  ai:7.5, g: 1.5,  gl:"Growing"      },
+  { n:"Solicitor",                       s:"Professionals",        e:14600,  p:125000, ai:7.5, g: 1.0,  gl:"Stable"       },
+  { n:"Mechanical Engineer",             s:"Professionals",        e:12900,  p:105000, ai:7.0, g: 2.0,  gl:"Growing"      },
+  { n:"Engineering Professionals nec",   s:"Professionals",        e:12600,  p:105000, ai:7.0, g: 2.0,  gl:"Growing"      },
+  { n:"Primary School Teacher",          s:"Professionals",        e:38900,  p:85000,  ai:5.5, g: 1.5,  gl:"Growing"      },
+  { n:"Secondary School Teacher",        s:"Professionals",        e:30800,  p:90000,  ai:5.5, g: 1.2,  gl:"Growing"      },
+  { n:"ECE Teacher",                     s:"Professionals",        e:34700,  p:58000,  ai:4.5, g: 2.0,  gl:"Growing"      },
+  { n:"Registered Nurses nec",           s:"Professionals",        e:13100,  p:90000,  ai:5.0, g: 2.5,  gl:"Growing"      },
+  { n:"Community Worker",                s:"Professionals",        e:14800,  p:60000,  ai:4.0, g: 2.5,  gl:"Growing"      },
+
+  // ── TECHNICIANS & TRADES (ANZSCO 3) ──
+  { n:"Electrician (General)",           s:"Technicians & Trades", e:25400,  p:90000,  ai:2.5, g: 2.5,  gl:"Growing"      },
+  { n:"Carpenter",                       s:"Technicians & Trades", e:20900,  p:85000,  ai:2.0, g: 2.5,  gl:"Growing"      },
+  { n:"Motor Mechanic (General)",        s:"Technicians & Trades", e:15200,  p:72000,  ai:2.5, g: 0.8,  gl:"Stable"       },
+  { n:"Painting Trades Worker",          s:"Technicians & Trades", e:13100,  p:72000,  ai:1.5, g: 0.8,  gl:"Stable"       },
+  { n:"Technicians & Trades nec",        s:"Technicians & Trades", e:12900,  p:75000,  ai:3.0, g: 1.0,  gl:"Stable"       },
+  { n:"Chef",                            s:"Technicians & Trades", e:24300,  p:65000,  ai:3.0, g: 0.5,  gl:"Stable"       },
+
+  // ── COMMUNITY & PERSONAL SERVICE (ANZSCO 4) ──
+  { n:"Personal Care Assistant",         s:"Community & Personal", e:29800,  p:52000,  ai:3.0, g: 3.0,  gl:"Growing Fast" },
+  { n:"Teachers' Aide",                  s:"Community & Personal", e:22900,  p:50000,  ai:4.0, g: 2.0,  gl:"Growing"      },
+  { n:"Waiter",                          s:"Community & Personal", e:18200,  p:48000,  ai:3.0, g:-0.3,  gl:"Stable"       },
+  { n:"Kitchenhand",                     s:"Community & Personal", e:16600,  p:46000,  ai:2.0, g:-0.3,  gl:"Stable"       },
+
+  // ── CLERICAL & ADMINISTRATIVE (ANZSCO 5) ──
+  { n:"General Clerk",                   s:"Clerical & Admin",     e:31600,  p:60000,  ai:8.5, g:-1.0,  gl:"Declining"    },
+  { n:"Program / Project Admin",         s:"Clerical & Admin",     e:18100,  p:78000,  ai:7.5, g: 1.0,  gl:"Stable"       },
+  { n:"Accounts Clerk",                  s:"Clerical & Admin",     e:17300,  p:63000,  ai:9.0, g:-1.0,  gl:"Declining"    },
+  { n:"Clerical & Admin Workers nec",    s:"Clerical & Admin",     e:20300,  p:60000,  ai:8.5, g:-0.5,  gl:"Declining"    },
+
+  // ── SALES (ANZSCO 6) ──
+  { n:"Sales Assistant (General)",       s:"Sales",                e:100700, p:47000,  ai:5.5, g:-0.5,  gl:"Stable"       },
+  { n:"Sales Representatives nec",       s:"Sales",                e:45100,  p:72000,  ai:6.5, g: 0.5,  gl:"Stable"       },
+
+  // ── MACHINERY OPERATORS & DRIVERS (ANZSCO 7) ──
+  { n:"Truck Driver (General)",          s:"Machinery & Drivers",  e:32500,  p:70000,  ai:4.0, g: 1.5,  gl:"Growing"      },
+  { n:"Storeperson",                     s:"Machinery & Drivers",  e:28500,  p:55000,  ai:3.5, g: 0.5,  gl:"Stable"       },
+  { n:"Machine Operators nec",           s:"Machinery & Drivers",  e:17100,  p:58000,  ai:3.0, g:-0.5,  gl:"Declining"    },
+
+  // ── LABOURERS (ANZSCO 8) ──
+  { n:"Labourers nec",                   s:"Labourers",            e:36200,  p:50000,  ai:1.5, g: 0.5,  gl:"Stable"       },
+  { n:"Commercial Cleaner",              s:"Labourers",            e:29200,  p:48000,  ai:1.5, g: 0.5,  gl:"Stable"       },
+
+  // ── AGRICULTURE (ANZSCO primary) ──
+  { n:"Dairy Cattle Farmer",             s:"Agriculture",          e:24500,  p:85000,  ai:2.5, g:-0.5,  gl:"Stable"       },
+  { n:"Mixed Crop & Livestock Farmer",   s:"Agriculture",          e:18300,  p:72000,  ai:2.0, g:-0.5,  gl:"Stable"       },
+  { n:"Mixed Farm Worker",               s:"Agriculture",          e:12400,  p:53000,  ai:1.5, g:-0.5,  gl:"Declining"    },
+];
+
+const SECTOR_ORDER = [
+  "Managers","Professionals","Technicians & Trades",
+  "Community & Personal","Clerical & Admin","Sales",
+  "Machinery & Drivers","Labourers","Agriculture"
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// COLOR FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════
+function lerp3(stops, t) {
+  t = Math.max(0, Math.min(1, t));
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (t <= stops[i+1][0]) {
+      const s = (t - stops[i][0]) / (stops[i+1][0] - stops[i][0]);
+      const a = stops[i][1], b = stops[i+1][1];
+      return [
+        Math.round(a[0] + (b[0]-a[0]) * s),
+        Math.round(a[1] + (b[1]-a[1]) * s),
+        Math.round(a[2] + (b[2]-a[2]) * s)
+      ];
+    }
+  }
+  return stops[stops.length-1][1];
+}
+function rgb([r,g,b]) { return `rgb(${r},${g},${b})`; }
+
+// AI Exposure: deep forest-green (safe) → amber → deep crimson (high)
+const AI_STOPS = [
+  [0.0,  [14,  85, 54]],
+  [0.2,  [20, 115, 72]],
+  [0.4,  [55, 135, 80]],
+  [0.5,  [175,125, 18]],
+  [0.65, [185, 85, 14]],
+  [0.8,  [165, 42, 12]],
+  [0.9,  [145, 20,  8]],
+  [1.0,  [105,  8,  4]]
+];
+function aiColor(score) { return rgb(lerp3(AI_STOPS, score / 10)); }
+
+// Growth: dark crimson (declining) → dark amber (stable) → deep emerald (fast)
+const G_STOPS = [
+  [0.0,  [95, 18, 18]],
+  [0.3,  [55, 40, 12]],
+  [0.45, [45, 60, 18]],
+  [0.6,  [18, 88, 44]],
+  [0.8,  [14,118, 54]],
+  [1.0,  [ 8,148, 65]]
+];
+function growthColor(rate) {
+  const t = (rate - (-1.5)) / (4.5 - (-1.5));
+  return rgb(lerp3(G_STOPS, t));
+}
+
+// Pay: deep navy → ocean blue → bright teal
+const P_STOPS = [
+  [0.0,  [ 8, 28, 68]],
+  [0.3,  [ 8, 62,115]],
+  [0.6,  [12,108,158]],
+  [0.85, [18,148,188]],
+  [1.0,  [28,178,210]]
+];
+function payColor(pay) {
+  const t = (pay - 40000) / (200000 - 40000);
+  return rgb(lerp3(P_STOPS, t));
+}
+
+function getColor(d, m) {
+  if (m === 'aiExposure') return aiColor(d.ai);
+  if (m === 'growth')     return growthColor(d.g);
+  if (m === 'pay')        return payColor(d.p);
+  return '#333';
+}
+
+function aiLabel(s) {
+  if (s <= 2)  return 'Minimal — physical/hands-on core';
+  if (s <= 4)  return 'Low — mostly physical + some digital';
+  if (s <= 6)  return 'Moderate — mix of both';
+  if (s <= 8)  return 'High — predominantly knowledge work';
+  if (s <= 9)  return 'Very High — almost entirely digital';
+  return 'Maximum — fully digital/routine';
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════════════
+let metric = 'aiExposure';
+let selectedOcc = null;
+
+// ═══════════════════════════════════════════════════════════════════════
+// TREEMAP
+// ═══════════════════════════════════════════════════════════════════════
+const wrap = document.getElementById('tmap-wrap');
+const svg  = d3.select('#tmap-svg');
+const tip  = document.getElementById('tip');
+
+function build() {
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  if (!W || !H) return;
+
+  svg.attr('width', W).attr('height', H);
+
+  // Build D3 hierarchy
+  const hier = {
+    name: 'NZ',
+    children: SECTOR_ORDER.map(sec => ({
+      name: sec,
+      children: DATA.filter(d => d.s === sec).map(d => ({ ...d, value: d.e }))
+    }))
+  };
+
+  const root = d3.hierarchy(hier)
+    .sum(d => d.value || 0)
+    .sort((a, b) => b.value - a.value);
+
+  // Apply squarified treemap layout
+  d3.treemap()
+    .size([W, H])
+    .paddingTop(20)      // space at top of each sector for label
+    .paddingInner(2)     // gap between tiles within sector
+    .paddingOuter(3)     // gap between sectors
+    .tile(d3.treemapSquarify)
+    (root);
+
+  svg.selectAll('*').remove();
+
+  // ── Sector group overlays + labels ──
+  svg.selectAll('.sec')
+    .data(root.children)
+    .join('g')
+    .attr('class', 'sec')
+    .each(function(d) {
+      const g = d3.select(this);
+      const sW = d.x1 - d.x0;
+
+      // Sector border
+      g.append('rect')
+        .attr('x', d.x0 + 0.5).attr('y', d.y0 + 0.5)
+        .attr('width', sW - 1).attr('height', d.y1 - d.y0 - 1)
+        .attr('fill', 'none')
+        .attr('stroke', '#1c3252')
+        .attr('stroke-width', 1);
+
+      // Sector label (top-left of group)
+      if (sW > 42) {
+        const lbl = d.data.name.toUpperCase();
+        const maxC = Math.floor((sW - 10) / 6);
+        const disp = lbl.length > maxC ? lbl.slice(0, maxC - 1) + '…' : lbl;
+        g.append('text')
+          .attr('x', d.x0 + 5).attr('y', d.y0 + 13)
+          .attr('fill', '#5a82a8')
+          .attr('font-size', '9px')
+          .attr('font-family', "'DM Mono', monospace")
+          .attr('letter-spacing', '0.08em')
+          .text(disp);
+      }
+    });
+
+  // ── Occupation tiles ──
+  const leaves = root.leaves();
+
+  const tiles = svg.selectAll('.tile')
+    .data(leaves)
+    .join('g')
+    .attr('class', 'tile')
+    .style('cursor', 'pointer')
+    .on('mouseenter', showTip)
+    .on('mousemove',  moveTip)
+    .on('mouseleave', hideTip)
+    .on('click',      clickTile);
+
+  tiles.append('rect')
+    .attr('class', 'tr')
+    .attr('x',      d => d.x0 + 1)
+    .attr('y',      d => d.y0 + 1)
+    .attr('width',  d => Math.max(0, d.x1 - d.x0 - 2))
+    .attr('height', d => Math.max(0, d.y1 - d.y0 - 2))
+    .attr('fill',   d => getColor(d.data, metric))
+    .attr('rx', 2)
+    .attr('stroke',       d => d.data === selectedOcc ? 'rgba(255,255,255,0.75)' : 'none')
+    .attr('stroke-width', 2);
+
+  // Tile text labels
+  tiles.each(function(d) {
+    const tW = d.x1 - d.x0 - 6;
+    const tH = d.y1 - d.y0 - 4;
+    if (tW < 30 || tH < 15) return;
+
+    const g   = d3.select(this);
+    const fs  = Math.min(11, Math.max(8, tH / 4));
+    const cW  = fs * 0.62;
+    const maxC = Math.floor(tW / cW);
+    const name = d.data.n;
+    const disp = name.length > maxC ? name.slice(0, maxC - 1) + '…' : name;
+
+    g.append('text')
+      .attr('x', d.x0 + 4).attr('y', d.y0 + 4)
+      .attr('dy', '1em')
+      .attr('fill', 'rgba(255,255,255,0.88)')
+      .attr('font-size', `${fs}px`)
+      .attr('font-family', "'DM Mono', monospace")
+      .text(disp);
+
+    // Sub-label (metric value) for larger tiles
+    if (tH > 32 && tW > 50) {
+      let v = '';
+      if (metric === 'aiExposure') v = `${d.data.ai.toFixed(1)}/10`;
+      else if (metric === 'pay')   v = `$${(d.data.p/1000).toFixed(0)}k`;
+      else                          v = `${d.data.g > 0 ? '+' : ''}${d.data.g.toFixed(1)}%`;
+
+      g.append('text')
+        .attr('x', d.x0 + 4).attr('y', d.y0 + 4 + fs + 2)
+        .attr('dy', '1em')
+        .attr('fill', 'rgba(255,255,255,0.42)')
+        .attr('font-size', '8.5px')
+        .attr('font-family', "'DM Mono', monospace")
+        .text(v);
+    }
+  });
+
+  updateLegend();
+}
+
+// ─── TOOLTIP ────────────────────────────────────────────────────────
+function showTip(event, d) {
+  const o = d.data;
+  tip.style.display = 'block';
+  tip.innerHTML = `
+    <div class="t-name">${o.n}</div>
+    <div class="t-row">Sector: <span class="t-val">${o.s}</span></div>
+    <div class="t-row">Employment: <span class="t-val">${o.e.toLocaleString()}</span></div>
+    <div class="t-row">Median Pay: <span class="t-val">$${(o.p/1000).toFixed(0)}k / yr</span></div>
+    <div class="t-row">AI Exposure: <span style="color:${aiColor(o.ai)}">${o.ai.toFixed(1)}/10 — ${aiLabel(o.ai).split('—')[0].trim()}</span></div>
+    <div class="t-row">Growth: <span style="color:${growthColor(o.g)}">${o.g > 0 ? '+' : ''}${o.g.toFixed(1)}%/yr · ${o.gl}</span></div>
+  `;
+}
+function moveTip(event) {
+  const pad = 14;
+  let x = event.clientX + pad;
+  let y = event.clientY + pad;
+  if (x + 240 > window.innerWidth)  x = event.clientX - 240 - pad;
+  if (y + 160 > window.innerHeight) y = event.clientY - 160 - pad;
+  tip.style.left = `${x}px`;
+  tip.style.top  = `${y}px`;
+}
+function hideTip() { tip.style.display = 'none'; }
+
+// ─── CLICK / DETAIL PANEL ───────────────────────────────────────────
+function clickTile(event, d) {
+  selectedOcc = d.data;
+  svg.selectAll('.tr')
+    .attr('stroke', node => node.data === d.data ? 'rgba(255,255,255,0.75)' : 'none');
+  renderDetail(d.data);
+}
+
+function renderDetail(o) {
+  const aiC = aiColor(o.ai);
+  const gC  = growthColor(o.g);
+  const pC  = payColor(o.p);
+  const aiDesc = aiLabel(o.ai);
+
+  document.getElementById('detail').innerHTML = `
+    <div>
+      <div class="d-sect">${o.s}</div>
+      <div class="d-name">${o.n}</div>
+    </div>
+
+    <hr class="d-div">
+
+    <div>
+      <div class="d-lbl">Employment &middot; 2023 Census</div>
+      <div class="d-val">${o.e.toLocaleString()}</div>
+      <div class="d-note">Stats NZ 2023 Census (ANZSCO classification)</div>
+    </div>
+
+    <div>
+      <div class="d-lbl">Median Annual Pay (NZD)</div>
+      <div class="d-val" style="color:${pC}">$${o.p.toLocaleString()}</div>
+      <div class="d-note">MBIE Occupation Outlook estimates</div>
+    </div>
+
+    <hr class="d-div">
+
+    <div>
+      <div class="d-lbl">Digital AI Exposure</div>
+      <div class="ai-wrap">
+        <div class="ai-bg">
+          <div class="ai-fill" style="width:${o.ai*10}%;background:${aiC};"></div>
+        </div>
+        <span class="ai-sc" style="color:${aiC}">${o.ai.toFixed(1)}</span>
+      </div>
+      <div class="d-note" style="margin-top:5px;">${aiDesc}</div>
+      <div class="d-note">Source: RBNZ AN 2026 (sector-calibrated)</div>
+    </div>
+
+    <div>
+      <div class="d-lbl">Employment Growth Outlook</div>
+      <div style="font-size:17px;color:${gC};margin-bottom:3px;">${o.g > 0 ? '+' : ''}${o.g.toFixed(1)}%/yr &middot; ${o.gl}</div>
+      <div class="d-note">Source: MBIE medium-long-term projections</div>
+    </div>
+
+    <div class="d-cav">
+      A high AI exposure score indicates this occupation is likely to be <em>reshaped</em> by AI — not necessarily 
+      replaced. Demand elasticity, latent demand, and regulatory factors can offset any displacement effect.
+      <br><br>
+      <span style="color:#3a6a8a;">RBNZ 2026 found AI exposure is highest for professional, managerial &amp; admin occupations and in the $50k–$150k income band.</span>
+    </div>
+  `;
+}
+
+// ─── LEGEND ─────────────────────────────────────────────────────────
+function updateLegend() {
+  const el = document.getElementById('legend');
+  const total = DATA.reduce((a,b) => a + b.e, 0);
+  const totalStr = `${(total/1e6).toFixed(2)}M of 2.79M total jobs shown`;
+
+  if (metric === 'aiExposure') {
+    const steps = [
+      { l:'0–2 Minimal',  v:1   },
+      { l:'3–4 Low',      v:3.5 },
+      { l:'5–6 Moderate', v:5.5 },
+      { l:'7–8 High',     v:7.5 },
+      { l:'9–10 Maximum', v:9.5 }
+    ];
+    el.innerHTML = `<span class="ll">AI Exposure:</span>`
+      + steps.map(s => `<div class="li"><div class="lsw" style="background:${aiColor(s.v)}"></div><span>${s.l}</span></div>`).join('')
+      + `<span class="lt">${totalStr}</span>`;
+
+  } else if (metric === 'growth') {
+    const steps = [
+      { l:'Declining (<0%)',  v:-1.2 },
+      { l:'Stable (0–1%)',    v:0.3  },
+      { l:'Growing (1–3%)',   v:1.8  },
+      { l:'Fast (3%+)',       v:3.8  }
+    ];
+    el.innerHTML = `<span class="ll">Growth:</span>`
+      + steps.map(s => `<div class="li"><div class="lsw" style="background:${growthColor(s.v)}"></div><span>${s.l}</span></div>`).join('')
+      + `<span class="lt">${totalStr}</span>`;
+
+  } else if (metric === 'pay') {
+    const steps = [
+      { l:'< $60k',     v:50000  },
+      { l:'$60–90k',    v:75000  },
+      { l:'$90–130k',   v:110000 },
+      { l:'> $130k',    v:165000 }
+    ];
+    el.innerHTML = `<span class="ll">Pay (NZD):</span>`
+      + steps.map(s => `<div class="li"><div class="lsw" style="background:${payColor(s.v)}"></div><span>${s.l}</span></div>`).join('')
+      + `<span class="lt">${totalStr}</span>`;
+  }
+}
+
+// ─── METRIC TOGGLE ──────────────────────────────────────────────────
+document.querySelectorAll('.mbtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    metric = btn.dataset.m;
+    document.querySelectorAll('.mbtn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    // Update selected tile highlight + labels; easier to just rebuild
+    build();
+  });
+});
+
+// ─── HELP TOGGLE ────────────────────────────────────────────────────
+let helpOpen = false;
+document.getElementById('helpBtn').addEventListener('click', () => {
+  helpOpen = !helpOpen;
+  const expl = document.getElementById('expl');
+  expl.style.display = helpOpen ? 'block' : 'none';
+  document.getElementById('helpBtn').textContent = helpOpen
+    ? '▾ What is Digital AI Exposure?' : '▸ What is Digital AI Exposure?';
+  // Redraw after layout shift
+  setTimeout(build, 50);
+});
+
+// ─── INIT + RESIZE ───────────────────────────────────────────────────
+build();
+const ro = new ResizeObserver(() => build());
+ro.observe(wrap);
+</script>
+</body>
+</html>
